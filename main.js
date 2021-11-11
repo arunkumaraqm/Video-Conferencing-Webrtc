@@ -71,3 +71,16 @@ function showFriendsFace() {
  .then(offer => pc.setLocalDescription(offer) )
  .then(() => sendMessage(yourId, JSON.stringify({'sdp': pc.localDescription})) );
 }
+
+function toggleVideo(){
+  let stream = yourVideo.srcObject;
+  var vidTrack;
+  for (const track of stream.getTracks()){
+    if (track.kind == 'video')
+    {
+      vidTrack = track;
+      break;
+    }
+  }
+  vidTrack.enabled = !vidTrack.enabled;
+}
