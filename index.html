@@ -31,8 +31,18 @@ button {
 	</button>
 	<button onclick="toggleVideo()" type="button" class="btn-btn-primary btn-lg">
 		<span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> 
-		Switch off Video
+		Switch off/on Video
 	</button>
+	<button onclick="toggleAudio();" type="button" class="btn-btn-primary btn-lg">
+		<span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> 
+		Mute/Unmute
+	</button>
+	<button onclick="leaveCall();" type="button" class="btn-btn-primary btn-lg">
+		<span class="glyphicon glyphicon-facetime-video" aria-hidden="true"></span> 
+		Leave Call
+	</button>
+
+	<span id='errmsg'></span>
 
 
 </body>

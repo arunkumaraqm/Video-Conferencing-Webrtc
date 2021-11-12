@@ -25,23 +25,49 @@ var yourId = Math.floor(Math.random()*1000000000); // randomly generated id
 // list of STUN and TURN servers to use
 // STUN servers do NAT traversal and procure a usable IP address.
 // TURN servers are used if STUN doesn't work out (because of restrictive firewalls and VPNs). They relay (middle man) the Webrtc traffic and hence are more expensive.
-var servers = {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}, {'urls': 'stun:stun.l.google.com:19302'}, {'urls': 'turn:numb.viagenie.ca','credential': 'webrtc','username': 'websitebeaver@mail.com'}]};
-var pc = new RTCPeerConnection(servers);
+const servers = {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}, {'urls': 'stun:stun.l.google.com:19302'}, {'urls': 'turn:numb.viagenie.ca','credential': 'webrtc','username': 'websitebeaver@mail.com'}]};
+var pc; // peer connection
+initializePeerConnection();
 
-// whenever a new ICE candidate is created on your computer, send a string version of it to the callee's computer
-pc.onicecandidate = (event => event.candidate?sendMessage(yourId, JSON.stringify({'ice': event.candidate})):console.log("Sent All Ice") );
-pc.onaddstream = (event => friendsVideo.srcObject = event.stream);
+function initializePeerConnection() {
 
+  pc = new RTCPeerConnection(servers);
+
+  // whenever a new ICE candidate is created on your computer, send a string version of it to the callee's computer
+  pc.onicecandidate = (event => {
+    if (event.candidate) 
+      sendMessage(yourId, JSON.stringify({'ice': event.candidate}));
+    else
+      console.log("Sent All Ice"); 
+  });
+
+  pc.onaddstream = (event => {
+    friendsVideo.srcObject = event.stream;
+  });
+
+  pc.onconnectionstatechange = () => {
+      const connectionStatus = pc.connectionState;
+      if (["disconnected", "failed", "closed"].includes(connectionStatus)) {
+          console.log(connectionStatus);
+          (pc.connectionState == 'disconnected') ? notifyThatOtherPersonLeft('disconnected'): notifyThatOtherPersonLeft("ditched");
+      }
+  };
+}
+
+// Send something to the signalling server
 function sendMessage(senderId, data) {
  var msg = database.push({ sender: senderId, message: data });
  msg.remove();
 }
 
+// Receive something from the signalling server
 function readMessage(data) {
     var msg = JSON.parse(data.val().message);
     var sender = data.val().sender;
+
+    console.log(yourId, sender, msg.leaving);
     
-    if (sender != yourId) {
+    if (sender != yourId && msg.leaving == undefined) {
   
         if (msg.ice != undefined)
           pc.addIceCandidate(new RTCIceCandidate(msg.ice));
@@ -55,8 +81,13 @@ function readMessage(data) {
         else if (msg.sdp.type == "answer")
           pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
     }
+    else if (sender != yourId && msg.leaving == true) {
+      notifyThatOtherPersonLeft("left");
+      pc.close();
+    }
 };
 
+// Receive new entry from the signalling server whenever a new entry occurs
 database.on('child_added', readMessage);
 
 function showMyFace() {
@@ -67,9 +98,14 @@ function showMyFace() {
 }
 
 function showFriendsFace() {
- pc.createOffer()
- .then(offer => pc.setLocalDescription(offer) )
- .then(() => sendMessage(yourId, JSON.stringify({'sdp': pc.localDescription})) );
+   pc.createOffer()
+   .then(offer => pc.setLocalDescription(offer) )
+   .then(() => 
+      sendMessage(
+        yourId, 
+        JSON.stringify({'sdp': pc.localDescription})
+      )
+    );
 }
 
 function toggleVideo(){
@@ -84,3 +120,33 @@ function toggleVideo(){
   }
   vidTrack.enabled = !vidTrack.enabled;
 }
+
+function toggleAudio(){
+  let stream = yourVideo.srcObject;
+  var audioTrack;
+  for (const track of stream.getTracks()){
+    if (track.kind == 'audio')
+    {
+      audioTrack = track;
+      break;
+    }
+  }
+  audioTrack.enabled = !audioTrack.enabled;
+}
+
+function notifyThatOtherPersonLeft(displayMsg) {
+  let elem = document.getElementById('errmsg');
+  elem.innerHTML = '<p>Other person '+displayMsg+'.</p>';
+}
+
+function leaveCall(argument) {
+  pc.close();
+  sendMessage(
+    yourId, 
+    JSON.stringify({
+      'sdp': pc.localDescription, 
+      'leaving': true
+    })
+  );
+}
+
