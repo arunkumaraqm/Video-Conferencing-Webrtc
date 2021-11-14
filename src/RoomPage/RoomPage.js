@@ -1,6 +1,7 @@
 import React from "react";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import VideoSection from "./VideoSection/VideoSection";
+import HtmlVideoSection from "./HtmlVideoSection/HtmlVideoSection";
 import ChatSection from "./ChatSection/ChatSection";
 
 import "./RoomPage.css";
