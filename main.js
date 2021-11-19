@@ -1,5 +1,3 @@
-console.log('in main js');
-
 //Create an account on Firebase, and use the credentials they give you in place of the following
 var config = {
   apiKey: "AIzaSyCGBt_I2QwSgC_ZPhOjFLticf18ewCs1qY",
@@ -12,141 +10,172 @@ var config = {
   measurementId: "G-LBD87LLZVL"
 };
 firebase.initializeApp(config);
-
 var database = firebase.database().ref(); // gives you access to the root of your database
+database.on('child_added', readMessage); // call readMessage as soon as another item is added to database
+
+var yourId = Math.floor(Math.random()*1000000000); // randomly generated id to identify messages sent by yourself in the Firebase database
+
+var yourpc, sendDataChannel, recvDataChannel, messageThreadHtml;
 
 window.onload = function () {
-  var yourVideo = document.getElementById("yourVideo");
-  console.log('yourVideo ', yourVideo)
-  var friendsVideo = document.getElementById("friendsVideo");
-}
-var yourId = Math.floor(Math.random()*1000000000); // randomly generated id
 
-// list of STUN and TURN servers to use
-// STUN servers do NAT traversal and procure a usable IP address.
-// TURN servers are used if STUN doesn't work out (because of restrictive firewalls and VPNs). They relay (middle man) the Webrtc traffic and hence are more expensive.
-const servers = {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}, {'urls': 'stun:stun.l.google.com:19302'}, {'urls': 'turn:numb.viagenie.ca','credential': 'webrtc','username': 'websitebeaver@mail.com'}]};
-var pc; // peer connection
-initializePeerConnection();
+	startConnection();
 
-function initializePeerConnection() {
+	messageThreadHtml = document.getElementById("message-thread");
+	var sendButton = document.getElementById("send");
+	var messageInput = document.getElementById("message-input");	
 
-  pc = new RTCPeerConnection(servers);
+	// When the sendButton is clicked, send the text message via sendDataChannel
+	sendButton.addEventListener("click", function (event) {
+		var val = messageInput.value;
+		console.log(val);
 
-  // whenever a new ICE candidate is created on your computer, send a string version of it to the callee's computer
-  pc.onicecandidate = (event => {
-    if (event.candidate) 
-      sendMessage(yourId, JSON.stringify({'ice': event.candidate}));
-    else
-      console.log("Sent All Ice"); 
-  });
-
-  pc.onaddstream = (event => {
-    friendsVideo.srcObject = event.stream;
-  });
-
-  pc.onconnectionstatechange = () => {
-      const connectionStatus = pc.connectionState;
-      if (["disconnected", "failed", "closed"].includes(connectionStatus)) {
-          console.log(connectionStatus);
-          (pc.connectionState == 'disconnected') ? notifyThatOtherPersonLeft('disconnected'): notifyThatOtherPersonLeft("ditched");
-      }
-  };
+		messageThreadHtml.innerHTML += "send: " + val + "<br/>";
+		sendDataChannel.send(val);
+	})
 }
 
-// Send something to the signalling server
+function startConnection() {
+	console.log('in startConnection');
+	if (hasRtcConnection()){
+		setupRtcConnection();
+	}
+	else {
+		alert("Webrtc not supported");
+	}
+}
+
+function hasRtcConnection() {
+	// only one of the parts in the OR chain will be true for one browser
+	window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection ||window.mozRTCPeerConnection; 
+	window.RTCSessionDescription = window.RTCSessionDescription || window.webkitRTCSessionDescription ||window.mozRTCSessionDescription; 
+	window.RTCIceCandidate = window.RTCIceCandidate || window.webkitRTCIceCandidate ||window.mozRTCIceCandidate; ''
+
+	return !!window.RTCPeerConnection // !! is shorthand for bool cast
+}
+
+function setupRtcConnection() {
+	console.log('in setupRtcConnection');
+	
+	// list of STUN and TURN servers to use
+	// STUN servers do NAT traversal and procure a usable IP address.
+	// TURN servers are used if STUN doesn't work out (because of restrictive firewalls and VPNs). They relay (middle man) the Webrtc traffic and hence are more expensive.
+	var config = {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}, {'urls': 'stun:stun.l.google.com:19302'}, {'urls': 'turn:numb.viagenie.ca','credential': 'webrtc','username': 'websitebeaver@mail.com'}]};
+
+	// create the Peer Connection 
+	yourpc = new RTCPeerConnection(config);
+
+	// whenever a new ICE candidate is created on your computer, send a string version of it to the callee's computer. * callee = the person you are talking to
+	yourpc.onicecandidate = (
+		event => event.candidate 
+			? sendMessage(yourId, JSON.stringify({'ice': event.candidate}))
+			: console.log("Sent All Ice") );
+
+	// When data channel is added to the peer connection, call this function
+	yourpc.ondatachannel = recvChannelCallback;
+
+	openDataChannel();
+
+	// create an offer and send it to the callee
+	yourpc.createOffer() // this offer contains details about yourself
+ .then(offer => yourpc.setLocalDescription(offer) )
+ .then(() => sendMessage(yourId, JSON.stringify({'sdp': yourpc.localDescription})) ); // sending these details to the callee in SDP format
+
+}
+
+// Send Message to the Signalling Server (Message does not refer to text message)
 function sendMessage(senderId, data) {
  var msg = database.push({ sender: senderId, message: data });
  msg.remove();
 }
 
-// Receive something from the signalling server
+// Receive Message from the Signalling Server (Message does not refer to text message)
 function readMessage(data) {
-    var msg = JSON.parse(data.val().message);
-    var sender = data.val().sender;
+	var msg = JSON.parse(data.val().message);
+	var sender = data.val().sender;
 
-    console.log(yourId, sender, msg.leaving);
-    
-    if (sender != yourId && msg.leaving == undefined) {
-  
-        if (msg.ice != undefined)
-          pc.addIceCandidate(new RTCIceCandidate(msg.ice));
-  
-        else if (msg.sdp.type == "offer")
-          pc.setRemoteDescription(new RTCSessionDescription(msg.sdp))
-          .then(() => pc.createAnswer())
-          .then(answer => pc.setLocalDescription(answer))
-          .then(() => sendMessage(yourId, JSON.stringify({'sdp': pc.localDescription})));
-  
-        else if (msg.sdp.type == "answer")
-          pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-    }
-    else if (sender != yourId && msg.leaving == true) {
-      notifyThatOtherPersonLeft("left");
-      pc.close();
-    }
+	if (sender != yourId) {
+
+	 if (msg.ice != undefined)
+		 yourpc.addIceCandidate(new RTCIceCandidate(msg.ice));
+
+	 else if (msg.sdp.type == "offer")
+		 yourpc.setRemoteDescription(new RTCSessionDescription(msg.sdp))
+		 .then(() => yourpc.createAnswer())
+		 .then(answer => yourpc.setLocalDescription(answer))
+		 .then(() => sendMessage(yourId, JSON.stringify({'sdp': yourpc.localDescription})));
+
+	 else if (msg.sdp.type == "answer")
+		 yourpc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+	}
 };
 
-// Receive new entry from the signalling server whenever a new entry occurs
-database.on('child_added', readMessage);
 
-function showMyFace() {
-    // retrieve audio and video stream from your device
- navigator.mediaDevices.getUserMedia({audio:true, video:true})
- .then(stream => yourVideo.srcObject = stream) // set the streams to the "yourVideo" element 
- .then(stream => pc.addStream(stream)); // add the streams to your peer connection object.
+function openDataChannel(){
+	console.log('openDataChannel');
+
+	// create data channel 
+	sendDataChannel = yourpc.createDataChannel("my-message-channel", {'reliable':false});
+	console.log(sendDataChannel);
+
+	// event handlers
+	sendDataChannel.onerror = function (error) {
+		console.log("Data channel error", error);
+	}
+
+	// when text message is received, display it on the webpage //CHECK
+	sendDataChannel.onmessage = function (event) {
+		console.log("Got data channel message", event.data);
+
+		messageThreadHtml.innerHTML += "recv1: " + event.data + "<br/>"
+	}
+
+	sendDataChannel.onopen = function () {
+		sendDataChannel.send("Other person has connected");
+	}
+
+	sendDataChannel.onclose = function () {
+		console.log("Data channel closed");
+	}
 }
 
-function showFriendsFace() {
-   pc.createOffer()
-   .then(offer => pc.setLocalDescription(offer) )
-   .then(() => 
-      sendMessage(
-        yourId, 
-        JSON.stringify({'sdp': pc.localDescription})
-      )
-    );
+// called when the data channel is created
+function recvChannelCallback(event) {
+	console.log('recvChannelCallback');
+
+	// there is only one data channel and it is bidirectional. `recvDataChannel` is just a different name for the same channel. Having said that, not sure whether I should be setting event handlers again.
+	recvDataChannel = event.channel;
+	recvDataChannel.onmessage = onRecvMessageCallback;
+	recvDataChannel.onopen = onRecvChannelStateChange;
+	recvDataChannel.onclose = onRecvChannelStateChange;
 }
 
-function toggleVideo(){
-  let stream = yourVideo.srcObject;
-  var vidTrack;
-  for (const track of stream.getTracks()){
-    if (track.kind == 'video')
-    {
-      vidTrack = track;
-      break;
-    }
-  }
-  vidTrack.enabled = !vidTrack.enabled;
+
+// When a text message is received, display it on the webpage
+function onRecvMessageCallback(event ) {
+	console.log('onRecvMessageCallback')
+
+	var msg;
+	try{
+		msg = JSON.parse(event.data);
+		console.log(event.type);
+	}
+	catch(e) {
+		msg = event.data;
+	}
+	messageThreadHtml.innerHTML += "recv2: " + msg + "<br/>";
 }
 
-function toggleAudio(){
-  let stream = yourVideo.srcObject;
-  var audioTrack;
-  for (const track of stream.getTracks()){
-    if (track.kind == 'audio')
-    {
-      audioTrack = track;
-      break;
-    }
-  }
-  audioTrack.enabled = !audioTrack.enabled;
-}
+function onRecvChannelStateChange() {
+	console.log('onRecvChannelStateChange');
+	console.log('recvDataChannel.readyState', recvDataChannel.readyState);
 
-function notifyThatOtherPersonLeft(displayMsg) {
-  let elem = document.getElementById('errmsg');
-  elem.innerHTML = '<p>Other person '+displayMsg+'.</p>';
-}
-
-function leaveCall(argument) {
-  pc.close();
-  sendMessage(
-    yourId, 
-    JSON.stringify({
-      'sdp': pc.localDescription, 
-      'leaving': true
-    })
-  );
+	if (recvDataChannel.readyState === 'open') {
+		sendDataChannel = recvDataChannel;
+	}
+	else {
+		var msg = "Other person has disconnected.";
+		messageThreadHtml.innerHTML += "recv3: " + msg + "<br/>";
+	}
 }
 
