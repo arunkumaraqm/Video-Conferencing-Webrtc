@@ -151,6 +151,54 @@ class NewWebrtc extends Component {
 
 	}
 
+
+	async hangup() {
+		const tracks = this.localStream.getTracks();
+		tracks.forEach(track => {
+			track.stop();
+		});
+
+		if (this.remoteStream) {
+			this.remoteStream.getTracks().forEach(track => track.stop());
+		}
+
+		if (this.peerConnection) {
+			this.peerConnection.close();
+		}
+
+		this.localStream = null;
+		this.remoteStream = null;
+		this.setState({
+			roomId: null,
+			isMeCaller: null,
+			isCameraBtnDisabled: false,
+			isCreateBtnDisabled: true,
+			isJoinBtnDisabled: true,
+			isHangupBtnDisabled: true,
+			isRoomDialogVisible: false,
+		})
+
+		// Delete room on hangup
+		if (this.state.roomId) {
+			const db = firebase.firestore();
+			const roomRef = db.collection('rooms').doc(this.state.roomId);
+			const calleeCandidates = await roomRef.collection('calleeCandidates').get();
+			calleeCandidates.forEach(async candidate => {
+				await candidate.ref.delete();
+			});
+			const callerCandidates = await roomRef.collection('callerCandidates').get();
+			callerCandidates.forEach(async candidate => {
+				await candidate.ref.delete();
+			});
+			await roomRef.delete();
+		}
+
+		window.location.reload(true);
+
+		
+	}
+
+
 	registerPeerConnectionListeners() {
 		this.peerConnection.addEventListener('icegatheringstatechange', () => {
 			console.log(
@@ -159,6 +207,7 @@ class NewWebrtc extends Component {
 
 		this.peerConnection.addEventListener('connectionstatechange', () => {
 			console.log(`Connection state change: ${this.peerConnection.connectionState}`);
+			if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState == 'closed') this.hangup();
 		});
 
 		this.peerConnection.addEventListener('signalingstatechange', () => {
@@ -242,6 +291,9 @@ class NewWebrtc extends Component {
 		await this.joinRoomById(givenRoomId);
 		console.log('Join room: ', this.state.roomId);
 
+		this.setState({
+			isRoomDialogVisible: false,
+		});
 		// {once: true} isn't included here
 	}
 
@@ -258,12 +310,6 @@ class NewWebrtc extends Component {
 			isCreateBtnDisabled: true,
 			isJoinBtnDisabled: true,
 			isRoomDialogVisible: true,
-		});
-	}
-
-	hangup() {
-		this.setState({
-			isMeCaller: null,
 		});
 	}
 
