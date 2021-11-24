@@ -1,5 +1,6 @@
 import React from 'react'
 import '../../App.css'
+import NewWebrtc from './NewWebrtc'
 import 'firebase/database'
 import classnames from 'classnames'
 
@@ -29,7 +30,6 @@ export default class VideoChat extends React.Component {
 		return <div className={classnames('videos', { active: this.state.isLoggedIn })}>
 			<div>
 				<label>{this.state.username}</label>
-
 				<video ref={this.props.setLocalVideoRef} autoPlay playsInline></video>
 			</div>
 			<div>
@@ -58,11 +58,15 @@ export default class VideoChat extends React.Component {
 	// }
 
 	render() {
-		return <section id="container">
-			{/* {this.props.connectedUser ? null : this.renderForms()} */}
+		
+		// return <section id="container">
+		// 	{/* {this.props.connectedUser ? null : this.renderForms()} */}
 
-			{this.renderVideos()}
+		// 	{this.renderVideos()}
 
-		</section>
+		// </section>
+		
+		return <div className="video-chat"><NewWebrtc /></div>
+		
 	}
 }

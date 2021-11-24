@@ -11,10 +11,10 @@ import "./JoinRoomPage.css";
 const JoinRoomPage = (props) => {
   const { setIsRoomHostAction, isRoomHost } = props;
 
-  const search = useLocation().search;
+  const search = useLocation().search; // the query string part from the URL; remember a '?host=true' is added to the url when the user is logging in as host
 
   useEffect(() => {
-    const isRoomHost = new URLSearchParams(search).get("host");
+    const isRoomHost = new URLSearchParams(search).get("host"); // getting the value associated with the 'host' key from the query string part
     if (isRoomHost) {
       setIsRoomHostAction(true);
     }
@@ -33,16 +33,18 @@ const JoinRoomPage = (props) => {
   );
 };
 
-const mapStoreStateToProps = (state) => {
+
+const mapStoreStateToProps = (state) => { // state refers to Redux state
+  // usually you only return certain values from `state` like return {nfcakes: state.nfcakes} but here we return all of them 
   return {
-    ...state,
-  };
+    ...state, // this syntax desconstructs `state` just like tuple unpacking in Python
+  }; // "apart from whatever props it was already receiving, this component will now receive an additional prop called nfcakes which reflects the nf cakes in the Redux store."
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setIsRoomHostAction: (isRoomHost) => dispatch(setIsRoomHost(isRoomHost)),
-  };
+    setIsRoomHostAction: (isRoomHost) => dispatch(setIsRoomHost(isRoomHost)), // setIsRoomHost is the action
+  }; // returns functions that are added as additional props
 };
 
-export default connect(mapStoreStateToProps, mapDispatchToProps)(JoinRoomPage);
+export default connect(mapStoreStateToProps, mapDispatchToProps)(JoinRoomPage); // connects this component to Redux store

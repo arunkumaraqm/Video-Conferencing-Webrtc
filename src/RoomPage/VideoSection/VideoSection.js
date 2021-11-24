@@ -29,35 +29,35 @@ class VideoSection extends React.Component {
     this.remoteVideoRef = React.createRef()
   }
 
-  componentDidMount = async () => {
-    // firebase.initializeApp(config)
+  // componentDidMount = async () => {
+  //   // firebase.initializeApp(config)
 
-    // getting local video stream
-    const localStream = await initiateLocalStream()
-    this.localVideoRef.srcObject = localStream
+  //   // getting local video stream
+  //   const localStream = await initiateLocalStream()
+  //   this.localVideoRef.srcObject = localStream
 
-    // const localConnection = await initiateConnection()
+  //   // const localConnection = await initiateConnection()
 
-    this.setState({
-      // database: firebase.database(),
-      localStream,
-      // localConnection
-    })
-  }
+  //   this.setState({
+  //     // database: firebase.database(),
+  //     localStream,
+  //     // localConnection
+  //   })
+  // }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    // if (this.state.database !== nextState.database) {
-    //   return false
-    // }
-    if (this.state.localStream !== nextState.localStream) {
-      return false
-    }
-    // if (this.state.localConnection !== nextState.localConnection) {
-    //   return false
-    // }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   // if (this.state.database !== nextState.database) {
+  //   //   return false
+  //   // }
+  //   if (this.state.localStream !== nextState.localStream) {
+  //     return false
+  //   }
+  //   // if (this.state.localConnection !== nextState.localConnection) {
+  //   //   return false
+  //   // }
 
-    return true
-  }
+  //   return true
+  // }
 
   // startCall = async (username, userToCall) => {
   //   const { localConnection, database, localStream } = this.state
@@ -70,9 +70,9 @@ class VideoSection extends React.Component {
   //   return await doLogin(username, this.state.database, this.handleUpdate)
   // }
 
-  setLocalVideoRef = ref => {
-    this.localVideoRef = ref
-  }
+  // setLocalVideoRef = ref => {
+  //   this.localVideoRef = ref
+  // }
 
   // setRemoteVideoRef = ref => {
   //   this.remoteVideoRef = ref
