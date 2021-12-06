@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {config} from './config';
+import Popup from 'reactjs-popup';
 import firebase from '@firebase/app';
 import '@firebase/firestore'
 // const firebase = {
@@ -314,8 +315,14 @@ class NewWebrtc extends Component {
 	}
 
 	getRoomIdString() {
+
+		
+
 		if (this.state.roomId && this.state.isMeCaller)
-			return <p>Current room is '{this.state.roomId}'. You are the caller.</p>
+			return <div>
+						<p>Current room is '{this.state.roomId}'. You are the caller.</p>
+						<button type="button" onClick={() => { navigator.clipboard.writeText(this.state.roomId) }}>Copy</button>
+			</div>
 		else if (this.state.roomId && ! this.state.isMeCaller)
 			return <p>Current room is {this.state.roomId}. You are the callee.</p>
 		else return <p></p>
