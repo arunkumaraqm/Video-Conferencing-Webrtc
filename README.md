@@ -59,4 +59,4 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 Go to Control Panel\System and Security\Windows Defender Firewall\Allowed applications and enable "change settings" then check private checkbox in Node.js row.
 Use `npm start` to run application.
 Find your local IP and the port that the application runs on in local host.
-Once you have both the number after localhost from your URL and your local IP Address, you are ready to go to your other device. Simply pull up your device’s browser and type in the IPv4 Address you copied down earlier followed by a colon and then the port number. (192.168.x.x:3000)
+Once you have both the number after localhost from your URL and your local IP Address, you are ready to go to your other device. Open device’s browser and type in the IPv4 Address followed by a colon and then the port number. (192.168.x.x:3000)
