@@ -34,7 +34,7 @@ const JoinRoomContent = (props) => {
       //check if room exists part. I have no clue what to do here. Link with WebRTC is needed.
     } else {
       setRoomIdAction(uuidv4());
-      history.push("/room");
+      history.push("/room", {name: nameValue}); //
     }
   };
 
