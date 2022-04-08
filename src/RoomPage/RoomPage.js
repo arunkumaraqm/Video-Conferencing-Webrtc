@@ -9,14 +9,16 @@ import "./RoomPage.css";
 const RoomPage = () => {
 
   const location = useLocation();
+  let userInfo = location.state;
+  console.log(location.state);
   let myname = location.state.name;
-  console.log("My name is ", myname);
+  console.log("My name and given roomid is ", myname, location.state.roomId);
 
   return (
     <div className="room_container">
-      <ParticipantsSection />
-      <VideoSection />
-      <ChatSection />
+      <ParticipantsSection userInfo={userInfo}/>
+      <VideoSection userInfo={userInfo}/>
+      <ChatSection userInfo={userInfo}/>
     </div>
   );
 };

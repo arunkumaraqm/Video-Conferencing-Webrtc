@@ -1,12 +1,7 @@
 import React, {Component} from 'react';
 import {config} from './config';
-import Popup from 'reactjs-popup';
 import firebase from '@firebase/app';
 import '@firebase/firestore'
-// const firebase = {
-// 	initializeApp: initializeApp,
-// 	firestore: firestore,
-// }
 
 var app = firebase.initializeApp({
 	apiKey: "AIzaSyCGBt_I2QwSgC_ZPhOjFLticf18ewCs1qY",
@@ -18,7 +13,7 @@ var app = firebase.initializeApp({
 	appId: "1:116804159061:web:0a3cb53888bb1ccd3776dc",
 	measurementId: "G-LBD87LLZVL"
 });
-
+						
 class NewWebrtc extends Component {
 	constructor(props){
 		super(props);
@@ -28,6 +23,7 @@ class NewWebrtc extends Component {
 		this.remoteVideoRef = React.createRef();
 		this.localStream = null;
 		this.remoteStream = null;
+		this.userInfo = props.userInfo;
 		this.state = {
 			roomId: null,
 			isMeCaller: null,
@@ -46,9 +42,27 @@ class NewWebrtc extends Component {
 		this.registerPeerConnectionListeners = this.registerPeerConnectionListeners.bind(this);
 		this.joinRoomById = this.joinRoomById.bind(this);
 		this.getRoomIdString = this.getRoomIdString.bind(this);
+
 	}
 
-	async openUserMedia() {
+	componentDidMount(){
+		console.log(this.userInfo);
+		this.openUserMedia().then(() => {
+			if (this.userInfo.isHost) {
+				this.createRoom();	
+			}
+			else {
+				this.joinRoomById(this.userInfo.roomId);
+				this.setState({
+					isCreateBtnDisabled: true,
+					isJoinBtnDisabled: true,
+					isRoomDialogVisible: false,
+				});
+			}
+		});
+	}
+
+	async openUserMedia(cb=null) {
 		console.log('openusermedia called');
 		const stream = await navigator.mediaDevices.getUserMedia(
 			{ video: true, audio: true });
@@ -71,7 +85,9 @@ class NewWebrtc extends Component {
 			isCreateBtnDisabled: false,
 			isJoinBtnDisabled: false,
 			isHangupBtnDisabled: false
-		})
+		});
+
+		// if (cb) cb();
 	};
 
 	async createRoom() {
@@ -194,7 +210,7 @@ class NewWebrtc extends Component {
 			await roomRef.delete();
 		}
 
-		window.location.reload(true);
+		window.location.href = "/"; // go back to introduction page
 
 		
 	}
@@ -285,6 +301,16 @@ class NewWebrtc extends Component {
 			});
 			// Listening for remote ICE candidates above
 		}
+		else {
+			alert("Room does not exist.")
+
+			this.setState({
+				isCameraBtnDisabled: true,
+				isCreateBtnDisabled: false,
+				isJoinBtnDisabled: false,
+				isHangupBtnDisabled: true
+			});
+		}
 	}
 
 	async confirmJoin(givenRoomId) {
@@ -373,8 +399,8 @@ class NewWebrtc extends Component {
 			</span>
 
 			<div id="videos" style={{ width: 500, padding: 10 }}>
-				<video id="localVideo" ref={this.localVideoRef} muted autoplay playsinline></video>
-				<video id="remoteVideo" ref={this.remoteVideoRef} muted autoplay playsinline></video>
+				<video id="localVideo" ref={this.localVideoRef} muted autoPlay playsInline></video>
+				<video id="remoteVideo" ref={this.remoteVideoRef} muted autoPlay playsInline></video>
 			</div>
 			{this.showhideRoomDialog()}
 

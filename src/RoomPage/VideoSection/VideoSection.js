@@ -25,6 +25,8 @@ class VideoSection extends React.Component {
       localStream: null,
       localConnection: null
     }
+    this.userInfo = props.userInfo;
+    // console.log(this.userInfo);
     this.localVideoRef = React.createRef()
     this.remoteVideoRef = React.createRef()
   }
@@ -112,6 +114,7 @@ class VideoSection extends React.Component {
     return <VideoChat
       // startCall={this.startCall}
       // onLogin={this.onLogin}
+      userInfo={this.userInfo}
       setLocalVideoRef={this.setLocalVideoRef}
       // setRemoteVideoRef={this.setRemoteVideoRef}
       // connectedUser={this.state.connectedUser}

@@ -31,10 +31,10 @@ const JoinRoomContent = (props) => {
   const handleJoinToRoom = async () => {
     setIdentityAction(nameValue);
     if (!isRoomHost) {
-      //check if room exists part. I have no clue what to do here. Link with WebRTC is needed.
+      history.push("/room", { isHost: false, name: nameValue, roomId: roomIdValue });
     } else {
       setRoomIdAction(uuidv4());
-      history.push("/room", {name: nameValue}); //
+      history.push("/room", {isHost: true, name: nameValue}); //
     }
   };
 

@@ -12,6 +12,7 @@ export default class VideoChat extends React.Component {
 			userToCall: null,
 			username: null
 		}
+		this.userInfo = props.userInfo;
 	}
 
 
@@ -66,7 +67,9 @@ export default class VideoChat extends React.Component {
 
 		// </section>
 		
-		return <div className="video-chat"><NewWebrtc /></div>
+		return <div className="video-chat">
+					<NewWebrtc userInfo={this.userInfo} />
+				</div>
 		
 	}
 }
