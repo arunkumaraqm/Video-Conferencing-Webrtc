@@ -1,67 +1,64 @@
+# Build Steps
+I am using Chromium but Google Chrome is fine too.
+
+To test on one computer, the application must be opened on two different browsers (two tabs or two windows is not likely to work). 
+Feed webcam video into one and fake video into another.
+
+## Setting up server for vanilla JS (LEGACY)
+- Install Web Server for Chrome extension on Chromium.
+- Go to chrome://apps and open the Web Server for Chrome app.
+- Open the project folder and start the server.
+- Check `accessible on local network` and `automatically show index.html`.
+
+## Setting up server for node/react
+- `npm start`
+
+## Setting up server in Ubuntu for node/react
+```bash
+cd this directory
+npm install
+export NODE_OPTIONS=--openssl-legacy-provider
+HOST=localhost npm start
+```
+
+## Fake video
+
+### Generate Fake Video
+- Install ffmpeg. 
+- Take any small MP4 video (a few seconds). Run `ffmpeg -y -i video.mp4 -pix_fmt yuv420p video.y4m` to produce video.y4m.
+
+### Open Chrome feeding it the fake video
+- You can also download one such fake video from the releases in this repo.
+- Open Chromium from the shell. `chromium --use-fake-device-for-media-stream --use-file-for-fake-video-capture=video.y4m`
+
+## Webcam permissions
+- Your browser will probably not let you enable webcam permissions for http.
+- Go to about:flags and enable `Insecure origins treated as secure`
+- Go to localhost:8887 (or the one listed in Web Server for Chrome popup or the one listed in the npm start process).
+- Click on the little button to the left of the address bar and enable mic and webcam permissions.
+- Do this for both browsers.
+
+## Video conference
+- Go to localhost:8887 on both browsers.
+- You should see caller's video on the left.
+- Keep dev console open for observing the steps.
+- Click on call button in one of the browsers.
+- You should see callee's video on the right.
+
+## To make the application run on LAN (Serving from Windows)
+
+Go to Control Panel\System and Security\Windows Defender Firewall\Allowed applications and enable "change settings" then check private checkbox in Node.js row.
+
+Use `npm start` to run application.
+
+Find your local IP and the port that the application runs on in local host.
+
+Once you have both the number after localhost from your URL and your local IP Address, you are ready to go to your other device. Open device’s browser and type in the IPv4 Address followed by a colon and then the port number. (192.168.x.x:3000)
+
+
 # Debug
 
 Whenever you're working solely on RoomPage, set DEBUG as true in NewWebrtc.js, else set it as false.
 When true, you can use the buttons at the top directly and hangup reloads the page. When false, you can only access the Room page after going through JoinRoom page and hangup goes to the Introduction page.
 
-# on Ubuntu
-```bash
-cd this directory
-npm install
-export NODE_OPTIONS=--openssl-legacy-provider
-
-HOST=localhost npm start
-```
-
-
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), using the [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/) template.
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `yarn start`
-
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
-
-### `yarn test`
-
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `yarn build`
-
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-# To make the application run on LAN
-
-Go to Control Panel\System and Security\Windows Defender Firewall\Allowed applications and enable "change settings" then check private checkbox in Node.js row.
-Use `npm start` to run application.
-Find your local IP and the port that the application runs on in local host.
-Once you have both the number after localhost from your URL and your local IP Address, you are ready to go to your other device. Open device’s browser and type in the IPv4 Address followed by a colon and then the port number. (192.168.x.x:3000)
+# [More info about the backend](https://github.com/arunkumaraqm/Video-Conferencing-Webrtc/blob/videoconf/README.md)
