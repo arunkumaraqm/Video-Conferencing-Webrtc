@@ -3,6 +3,9 @@ import {config} from './config';
 import firebase from '@firebase/app';
 import '@firebase/firestore'
 
+const DEBUG = true;
+
+
 var app = firebase.initializeApp({
 	apiKey: "AIzaSyCGBt_I2QwSgC_ZPhOjFLticf18ewCs1qY",
 	authDomain: "videomeet-6d44c.firebaseapp.com",
@@ -48,17 +51,20 @@ class NewWebrtc extends Component {
 	componentDidMount(){
 		console.log(this.userInfo);
 		this.openUserMedia().then(() => {
-			if (this.userInfo.isHost) {
-				this.createRoom();	
-			}
-			else {
-				this.joinRoomById(this.userInfo.roomId);
-				this.setState({
-					isCreateBtnDisabled: true,
-					isJoinBtnDisabled: true,
-					isRoomDialogVisible: false,
-				});
-			}
+			if (!DEBUG)
+			{
+				if (this.userInfo.isHost) {
+					this.createRoom();	
+				}
+				else {
+					this.joinRoomById(this.userInfo.roomId);
+					this.setState({
+						isCreateBtnDisabled: true,
+						isJoinBtnDisabled: true,
+						isRoomDialogVisible: false,
+					});
+				}
+			}		
 		});
 	}
 
@@ -210,7 +216,8 @@ class NewWebrtc extends Component {
 			await roomRef.delete();
 		}
 
-		window.location.href = "/"; // go back to introduction page
+		if (!DEBUG)		window.location.href = "/"; // go back to introduction page
+		else window.location.reload(false); // reload this page when debugging
 
 		
 	}
@@ -378,7 +385,7 @@ class NewWebrtc extends Component {
 	}
 
 	render () {
-		return <div className="new-webrtc">
+		return <div className="new-webrtc"> 
 			<div id="buttons">
 				<button id="cameraBtn" disabled={this.state.isCameraBtnDisabled} onClick={() => this.openUserMedia()}>
 					<span>Open camera & microphone</span>
@@ -398,11 +405,12 @@ class NewWebrtc extends Component {
 			{ this.getRoomIdString() }
 			</span>
 
+			{this.showhideRoomDialog()}
+
 			<div id="videos" style={{ width: 500, padding: 10 }}>
 				<video id="localVideo" ref={this.localVideoRef} muted autoPlay playsInline></video>
 				<video id="remoteVideo" ref={this.remoteVideoRef} muted autoPlay playsInline></video>
 			</div>
-			{this.showhideRoomDialog()}
 
 		</div>
 	}

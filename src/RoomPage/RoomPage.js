@@ -11,8 +11,8 @@ const RoomPage = () => {
   const location = useLocation();
   let userInfo = location.state;
   console.log(location.state);
-  let myname = location.state.name;
-  console.log("My name and given roomid is ", myname, location.state.roomId);
+  // let myname = location.state.name;
+  // console.log("My name and given roomid is ", myname, location.state.roomId);
 
   return (
     <div className="room_container">

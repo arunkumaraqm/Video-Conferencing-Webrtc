@@ -1,3 +1,8 @@
+# Debug
+
+Whenever you're working solely on RoomPage, set DEBUG as true in NewWebrtc.js, else set it as false.
+When true, you can use the buttons at the top directly and hangup reloads the page. When false, you can only access the Room page after going through JoinRoom page and hangup goes to the Introduction page.
+
 # on Ubuntu
 ```bash
 cd this directory
