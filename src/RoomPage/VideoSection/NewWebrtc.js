@@ -4,7 +4,7 @@ import firebase from '@firebase/app';
 import '@firebase/firestore'
 
 const DEBUG = true;
-
+const log = console.log;
 
 var app = firebase.initializeApp({
 	apiKey: "AIzaSyCGBt_I2QwSgC_ZPhOjFLticf18ewCs1qY",
@@ -22,6 +22,7 @@ class NewWebrtc extends Component {
 		super(props);
 
 		this.peerConnection = null;
+		this.dataChannel = null;
 		this.localVideoRef = React.createRef();
 		this.remoteVideoRef = React.createRef();
 		this.localStream = null;
@@ -35,6 +36,7 @@ class NewWebrtc extends Component {
 			isJoinBtnDisabled: true,
 			isHangupBtnDisabled: true,
 			isRoomDialogVisible: false,
+			listOfTextMessages: [],
 		}
 		this.openUserMedia = this.openUserMedia.bind(this);
 		this.createRoom = this.createRoom.bind(this);
@@ -45,6 +47,8 @@ class NewWebrtc extends Component {
 		this.registerPeerConnectionListeners = this.registerPeerConnectionListeners.bind(this);
 		this.joinRoomById = this.joinRoomById.bind(this);
 		this.getRoomIdString = this.getRoomIdString.bind(this);
+		this.setupConnection = this.setupConnection.bind(this);
+		this.onmessagesent = this.onmessagesent.bind(this);
 
 	}
 
@@ -68,7 +72,7 @@ class NewWebrtc extends Component {
 		});
 	}
 
-	async openUserMedia(cb=null) {
+	async openUserMedia() {
 		console.log('openusermedia called');
 		const stream = await navigator.mediaDevices.getUserMedia(
 			{ video: true, audio: true });
@@ -84,17 +88,23 @@ class NewWebrtc extends Component {
 		remoteVideo.width = 320;
 		remoteVideo.play();
 
-		// TODO add code for remote stream here
-
 		this.setState({
 			isCameraBtnDisabled: true,
 			isCreateBtnDisabled: false,
 			isJoinBtnDisabled: false,
 			isHangupBtnDisabled: false
 		});
-
-		// if (cb) cb();
 	};
+
+	setupConnection() {
+
+		console.log('Create PeerConnection with configuration: ', config);
+		this.peerConnection = new RTCPeerConnection(config);
+		this.dataChannel = this.peerConnection.createDataChannel('mydc');
+		log(this.dataChannel)
+
+		this.registerPeerConnectionListeners();
+	}
 
 	async createRoom() {
 		this.setState({
@@ -105,10 +115,7 @@ class NewWebrtc extends Component {
 		const db = firebase.firestore(app);
 		const roomRef = await db.collection('rooms').doc();
 
-		console.log('Create PeerConnection with configuration: ', config);
-		this.peerConnection = new RTCPeerConnection(config);
-
-		this.registerPeerConnectionListeners();
+		this.setupConnection();
 
 		this.localStream.getTracks().forEach(track => {
 			this.peerConnection.addTrack(track, this.localStream);
@@ -126,6 +133,8 @@ class NewWebrtc extends Component {
 			callerCandidatesCollection.add(event.candidate.toJSON());
 		});
 		// Code for collecting ICE candidates above
+
+
 
 		// Code for creating a room below
 		const offer = await this.peerConnection.createOffer();
@@ -173,7 +182,6 @@ class NewWebrtc extends Component {
 		});
 
 	}
-
 
 	async hangup() {
 		const tracks = this.localStream.getTracks();
@@ -223,7 +231,7 @@ class NewWebrtc extends Component {
 	}
 
 
-	registerPeerConnectionListeners() {
+	registerPeerConnectionListeners = () => {
 		this.peerConnection.addEventListener('icegatheringstatechange', () => {
 			console.log(
 				`ICE gathering state changed: ${this.peerConnection.iceGatheringState}`);
@@ -231,7 +239,7 @@ class NewWebrtc extends Component {
 
 		this.peerConnection.addEventListener('connectionstatechange', () => {
 			console.log(`Connection state change: ${this.peerConnection.connectionState}`);
-			if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState == 'closed') this.hangup();
+			if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'closed') this.hangup();
 		});
 
 		this.peerConnection.addEventListener('signalingstatechange', () => {
@@ -242,7 +250,33 @@ class NewWebrtc extends Component {
 			console.log(
 				`ICE connection state change: ${this.peerConnection.iceConnectionState}`);
 		});
+
+		this.peerConnection.ondatachannel = (event) => {
+			var receiveChannel = event.channel;
+			receiveChannel.onmessage = this.onmessagesent;
+		}; 
+
+
+		this.dataChannel.onerror = (err) => {log('data channel err', err);}
+
+		// this.dataChannel.onmessage = (event) => {log('data channel on msg', event.data);} // pointless
+
+		this.dataChannel.onopen = () => {
+			log('data channel open')
+			this.dataChannel.send('hello');
+		}
+
+		this.dataChannel.onclose = () => {
+			log('data channel closed')
+		}
 	}
+
+	onmessagesent(event) {
+		console.log("ondatachannel message:", event.data);
+		log(this.state);
+		this.setState({ listOfTextMessages: this.state.listOfTextMessages + [event.data.toLowerCase() + ' '] });
+
+	};
 
 	async joinRoomById(givenRoomId) {
 		const db = firebase.firestore();
@@ -252,8 +286,7 @@ class NewWebrtc extends Component {
 
 		if (roomSnapshot.exists) {
 			console.log('Create PeerConnection with configuration: ', config);
-			this.peerConnection = new RTCPeerConnection(config);
-			this.registerPeerConnectionListeners();
+			this.setupConnection();
 			this.localStream.getTracks().forEach(track => {
 				this.peerConnection.addTrack(track, this.localStream);
 			});
@@ -410,6 +443,19 @@ class NewWebrtc extends Component {
 			<div id="videos" style={{ width: 500, padding: 10 }}>
 				<video id="localVideo" ref={this.localVideoRef} muted autoPlay playsInline></video>
 				<video id="remoteVideo" ref={this.remoteVideoRef} muted autoPlay playsInline></video>
+			</div>
+
+			<div id="chat">
+				{this.state.listOfTextMessages}
+				<input type="text" onKeyPress={(e) => {
+					if (e.key === "Enter") {
+						this.setState({
+							listOfTextMessages: this.state.listOfTextMessages + [e.target.value.toUpperCase() + ' '] });
+						this.dataChannel.send(JSON.stringify(e.target.value));
+						e.target.value = '/';
+					}
+				}}>
+				</input>
 			</div>
 
 		</div>
