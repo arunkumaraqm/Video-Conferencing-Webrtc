@@ -102,6 +102,14 @@ class NewWebrtc extends Component {
     });
   }
 
+  handleSendMessage(givenMessage) {
+    this.setState({
+      listOfTextMessages:
+        this.state.listOfTextMessages + [givenMessage.toUpperCase() + " "],
+    });
+    this.dataChannel.send(JSON.stringify(e.target.value));
+  }
+
   async openUserMedia() {
     console.log("openusermedia called");
     const stream = await navigator.mediaDevices.getUserMedia({
