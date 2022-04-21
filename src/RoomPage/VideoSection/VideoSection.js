@@ -1,34 +1,33 @@
 import React, { useState } from "react";
 import VideoButtons from "./VideoButtons";
 import Videos from "./Videos";
-// import video1 from "../../resources/images/Stencil.mp4"
 
-import VideoChat from './VideoChat'
+import VideoChat from "./VideoChat";
 const initiateLocalStream = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
-      audio: true
-    })
-    return stream
+      audio: true,
+    });
+    return stream;
   } catch (exception) {
-    console.error(exception)
+    console.error(exception);
   }
-}
+};
 
 class VideoSection extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       database: null,
       connectedUser: null,
       localStream: null,
-      localConnection: null
-    }
+      localConnection: null,
+    };
     this.userInfo = props.userInfo;
     // console.log(this.userInfo);
-    this.localVideoRef = React.createRef()
-    this.remoteVideoRef = React.createRef()
+    this.localVideoRef = React.createRef();
+    this.remoteVideoRef = React.createRef();
   }
 
   // componentDidMount = async () => {
@@ -111,19 +110,20 @@ class VideoSection extends React.Component {
   // }
 
   render() {
-    return <VideoChat
-      // startCall={this.startCall}
-      // onLogin={this.onLogin}
-      userInfo={this.userInfo}
-      setLocalVideoRef={this.setLocalVideoRef}
-      // setRemoteVideoRef={this.setRemoteVideoRef}
-      // connectedUser={this.state.connectedUser}
-    />
+    return (
+      <VideoChat
+        // startCall={this.startCall}
+        // onLogin={this.onLogin}
+        userInfo={this.userInfo}
+        setLocalVideoRef={this.setLocalVideoRef}
+        // setRemoteVideoRef={this.setRemoteVideoRef}
+        // connectedUser={this.state.connectedUser}
+      />
+    );
   }
 }
 
 export default VideoSection;
-
 
 // const initiateLocalStream = async () => {
 //   try {

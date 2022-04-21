@@ -4,6 +4,7 @@ import firebase from "@firebase/app";
 import "@firebase/firestore";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import ChatSection from "./ChatSection/ChatSection";
+import "../RoomPage.css";
 
 var app = firebase.initializeApp({
   apiKey: "AIzaSyCGBt_I2QwSgC_ZPhOjFLticf18ewCs1qY",
@@ -15,6 +16,35 @@ var app = firebase.initializeApp({
   appId: "1:116804159061:web:0a3cb53888bb1ccd3776dc",
   measurementId: "G-LBD87LLZVL",
 });
+
+const listOfMessages = [
+  {
+    identity: "Achyut",
+    content: "Hello.",
+  },
+  {
+    identity: "Akhil",
+    content: "Do you need my help ?",
+  },
+  {
+    content: "All good",
+    messageCreatedByMe: true,
+    identity: "me",
+  },
+  {
+    content: "No help needed",
+    messageCreatedByMe: true,
+    identity: "me",
+  },
+  {
+    identity: "Arun",
+    content: "Hello guys",
+  },
+  {
+    identity: "Arun",
+    content: "No, I'm good.",
+  },
+];
 
 class NewWebrtc extends Component {
   constructor(props) {
@@ -364,7 +394,7 @@ class NewWebrtc extends Component {
   getRoomIdString() {
     if (this.state.roomId && this.state.isMeCaller)
       return (
-        <div>
+        <div className="create-button">
           <p>Current room is '{this.state.roomId}'. You are the caller.</p>
           <button
             type="button"
@@ -417,7 +447,6 @@ class NewWebrtc extends Component {
     return (
       <div className="new-webrtc">
         <ParticipantsSection />
-        <ChatSection />
         <div id="buttons">
           <button
             id="cameraBtn"
@@ -451,7 +480,11 @@ class NewWebrtc extends Component {
 
         <span id="currentRoom">{this.getRoomIdString()}</span>
 
-        <div id="videos" style={{ width: 500, padding: 10 }}>
+        <div
+          id="videos"
+          style={{ width: 500, padding: 10 }}
+          className="video_track_container"
+        >
           <video
             id="localVideo"
             ref={this.localVideoRef}
@@ -468,6 +501,7 @@ class NewWebrtc extends Component {
           ></video>
         </div>
         {this.showhideRoomDialog()}
+        <ChatSection listOfMessages={listOfMessages} />
       </div>
     );
   }
