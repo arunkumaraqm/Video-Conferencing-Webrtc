@@ -1,13 +1,11 @@
 import React from "react";
-import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import VideoSection from "./VideoSection/VideoSection";
-import ChatSection from "./ChatSection/ChatSection";
+
 import { useLocation } from "react-router-dom";
 
 import "./RoomPage.css";
 
 const RoomPage = () => {
-
   const location = useLocation();
   let userInfo = location.state;
   console.log(location.state);
@@ -16,9 +14,7 @@ const RoomPage = () => {
 
   return (
     <div className="room_container">
-      <ParticipantsSection userInfo={userInfo}/>
-      <VideoSection userInfo={userInfo}/>
-      <ChatSection userInfo={userInfo}/>
+      <VideoSection userInfo={userInfo} />
     </div>
   );
 };

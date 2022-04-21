@@ -3,11 +3,44 @@
   height: 100vh;
   display: flex;
 }
-
+.video-chat {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+.new-webrtc {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+#buttons {
+  display: flex;
+  flex-direction: row;
+  height: 3.5em;
+  width: 20em;
+}
+#videos {
+  display: flex;
+  flex-direction: row;
+  justify-content: right;
+}
+.create-button {
+  position: relative;
+  float: right;
+  margin-left: 5em;
+  margin-top: -1em;
+}
 .chat_section_container {
   height: 100%;
   width: 20%;
-  background-image: linear-gradient(to right top, #ac5959, #c54e4c, #db3f3b, #ee2b26, #ff0000);
+  background-image: linear-gradient(
+    to right top,
+    #ac5959,
+    #c54e4c,
+    #db3f3b,
+    #ee2b26,
+    #ff0000
+  );
   display: flex;
   flex-direction: column;
 }
@@ -157,8 +190,6 @@
   flex-direction: column;
   align-content: flex-start;
   height: 100%;
-
-  
 }
 
 .participants_paragraph {
@@ -180,7 +211,14 @@
 .participants_section_container {
   height: 100%;
   width: 20%;
-  background-image: linear-gradient(to right top, #ac5959, #c54e4c, #db3f3b, #ee2b26, #ff0000);
+  background-image: linear-gradient(
+    to right top,
+    #ac5959,
+    #c54e4c,
+    #db3f3b,
+    #ee2b26,
+    #ff0000
+  );
   display: flex;
   flex-direction: column;
 }
