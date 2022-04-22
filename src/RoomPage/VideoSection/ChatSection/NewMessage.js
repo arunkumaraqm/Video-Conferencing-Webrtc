@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SendMessageButton from "../../../resources/images/sendMessageButton.svg";
 
-const NewMessage = () => {
+const NewMessage = (props) => {
   const [message, setMessage] = useState("");
 
   const sendMessage = () => {
@@ -14,7 +14,7 @@ const NewMessage = () => {
     if (event.key === "Enter") {
       event.preventDefault(); // do not know what this does
       //sendMessage To other user
-      handleSendMessage();
+      props.handleSendMessage(event.target.value);
     }
   };
 
@@ -38,7 +38,7 @@ const NewMessage = () => {
         onClick={sendMessage}
       />
     </div>
-    {/* <div id="chat">
+    /* <div id="chat">
           {this.state.listOfTextMessages}
           <input
             type="text"
@@ -54,7 +54,7 @@ const NewMessage = () => {
               }
             }}
           ></input>
-        </div> */}
+        </div> */
   );
 };
 

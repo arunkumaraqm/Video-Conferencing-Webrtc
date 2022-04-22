@@ -8,7 +8,7 @@ const ChatSection = (props) => {
     <div className="chat_section_container">
       <ChatLabel />
       <Messages listOfMessages={props.listOfMessages} />
-      <NewMessage />
+      <NewMessage handleSendMessage={props.handleSendMessage} />
     </div>
   );
 };

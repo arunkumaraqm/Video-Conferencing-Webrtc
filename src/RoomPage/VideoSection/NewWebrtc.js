@@ -82,6 +82,7 @@ class NewWebrtc extends Component {
     this.getRoomIdString = this.getRoomIdString.bind(this);
     this.setupConnection = this.setupConnection.bind(this);
     this.onmessagesent = this.onmessagesent.bind(this);
+    this.handleSendMessage = this.handleSendMessage.bind(this);
   }
 
   componentDidMount() {
@@ -107,7 +108,7 @@ class NewWebrtc extends Component {
       listOfTextMessages:
         this.state.listOfTextMessages + [givenMessage.toUpperCase() + " "],
     });
-    this.dataChannel.send(JSON.stringify(e.target.value));
+    this.dataChannel.send(JSON.stringify(givenMessage));
   }
 
   async openUserMedia() {
@@ -546,7 +547,10 @@ class NewWebrtc extends Component {
             playsInline
           ></video>
         </div>
-        <ChatSection listOfMessages={listOfMessages} />
+        <ChatSection
+          listOfMessages={listOfMessages}
+          handleSendMessage={this.handleSendMessage}
+        />
         {/* <div id="chat">
           {this.state.listOfTextMessages}
           <input
