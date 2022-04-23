@@ -20,33 +20,33 @@ var app = firebase.initializeApp({
   measurementId: "G-LBD87LLZVL",
 });
 
-const listOfMessages = [
-  {
-    identity: "Achyut",
-    content: "Hello.",
-  },
-  {
-    identity: "Akhil",
-    content: "Do you need my help ?",
-  },
-  {
-    content: "All good",
-    messageCreatedByMe: true,
-    identity: "me",
-  },
-  {
-    content: "No help needed",
-    messageCreatedByMe: true,
-    identity: "me",
-  },
-  {
-    identity: "Arun",
-    content: "Hello guys",
-  },
-  {
-    identity: "Arun",
-    content: "No, I'm good.",
-  },
+let PRESET_MESSAGES = [
+  // {
+  //   identity: "Achyut",
+  //   content: "Hello.",
+  // },
+  // {
+  //   identity: "Akhil",
+  //   content: "Do you need my help ?",
+  // },
+  // {
+  //   content: "All good",
+  //   messageCreatedByMe: true,
+  //   identity: "me",
+  // },
+  // {
+  //   content: "No help needed",
+  //   messageCreatedByMe: true,
+  //   identity: "me",
+  // },
+  // {
+  //   identity: "Arun",
+  //   content: "Hello guys",
+  // },
+  // {
+  //   identity: "Arun",
+  //   content: "No, I'm good.",
+  // },
 ];
 
 class NewWebrtc extends Component {
@@ -59,7 +59,10 @@ class NewWebrtc extends Component {
     this.remoteVideoRef = React.createRef();
     this.localStream = null;
     this.remoteStream = null;
-    this.userInfo = props.userInfo;
+    if (!DEBUG) this.userInfo = props.userInfo;
+    else this.userInfo = {
+      identity: 'Unnamed',
+    }
     this.state = {
       roomId: null,
       isMeCaller: null,
@@ -68,7 +71,7 @@ class NewWebrtc extends Component {
       isJoinBtnDisabled: true,
       isHangupBtnDisabled: true,
       isRoomDialogVisible: false,
-      listOfTextMessages: [],
+      listOfMessages: [...PRESET_MESSAGES],
     };
     this.openUserMedia = this.openUserMedia.bind(this);
     this.createRoom = this.createRoom.bind(this);
@@ -81,7 +84,7 @@ class NewWebrtc extends Component {
     this.joinRoomById = this.joinRoomById.bind(this);
     this.getRoomIdString = this.getRoomIdString.bind(this);
     this.setupConnection = this.setupConnection.bind(this);
-    this.onmessagesent = this.onmessagesent.bind(this);
+    this.handleRecvMessage = this.handleRecvMessage.bind(this);
     this.handleSendMessage = this.handleSendMessage.bind(this);
   }
 
@@ -101,14 +104,6 @@ class NewWebrtc extends Component {
         }
       }
     });
-  }
-
-  handleSendMessage(givenMessage) {
-    this.setState({
-      listOfTextMessages:
-        this.state.listOfTextMessages + [givenMessage.toUpperCase() + " "],
-    });
-    this.dataChannel.send(JSON.stringify(givenMessage));
   }
 
   async openUserMedia() {
@@ -147,6 +142,10 @@ class NewWebrtc extends Component {
   }
 
   async createRoom() {
+    if (!DEBUG) {}
+    else {
+      this.userInfo.identity = 'Hostalice'
+    }
     this.setState({
       isCreateBtnDisabled: true,
       isJoinBtnDisabled: true,
@@ -305,7 +304,10 @@ class NewWebrtc extends Component {
 
     this.peerConnection.ondatachannel = (event) => {
       var receiveChannel = event.channel;
-      receiveChannel.onmessage = this.onmessagesent;
+      receiveChannel.onmessage = (event) => {
+        let message = JSON.parse(event.data);
+        this.handleRecvMessage(message.content, message.identity);
+      }
     };
 
     this.dataChannel.onerror = (err) => {
@@ -316,22 +318,17 @@ class NewWebrtc extends Component {
 
     this.dataChannel.onopen = () => {
       log("data channel open");
-      this.dataChannel.send("hello");
+      let tosend = {
+        content: 'You can now begin chatting.',
+        identity: '',
+      }
+      this.dataChannel.send(JSON.stringify(tosend));
     };
 
     this.dataChannel.onclose = () => {
       log("data channel closed");
     };
   };
-
-  onmessagesent(event) {
-    console.log("ondatachannel message:", event.data);
-    log(this.state);
-    this.setState({
-      listOfTextMessages:
-        this.state.listOfTextMessages + [event.data.toLowerCase() + " "],
-    });
-  }
 
   async joinRoomById(givenRoomId) {
     const db = firebase.firestore();
@@ -410,6 +407,11 @@ class NewWebrtc extends Component {
         isJoinBtnDisabled: false,
         isHangupBtnDisabled: true,
       });
+    }
+
+    if (!DEBUG) { }
+    else {
+      this.userInfo.identity = 'Nicebob'
     }
   }
 
@@ -492,6 +494,39 @@ class NewWebrtc extends Component {
     else return <div></div>;
   }
 
+  handleSendMessage(content) {
+
+    this.setState({ // add the message you sent to your chat thread
+      listOfMessages:
+        this.state.listOfMessages.concat([
+          {
+            identity: this.userInfo.identity,
+            messageCreatedByMe: true,
+            content: content,
+          },
+        ])
+    });
+
+    let message = {
+      content: content,
+      identity: this.userInfo.identity
+    }
+    this.dataChannel.send(JSON.stringify(message)); // actually send the message
+  }
+
+  handleRecvMessage(content, identity) {
+    console.log("ondatachannel message:", content);
+    // log(this.state);
+    this.setState({ // add the message you received to your chat thread
+      listOfMessages:
+        this.state.listOfMessages.concat([
+          {
+            identity: identity,
+            content: content
+          }])
+    });
+  }
+
   render() {
     return (
       <div className="new-webrtc">
@@ -507,7 +542,7 @@ class NewWebrtc extends Component {
           <button
             id="createBtn"
             disabled={this.state.isCreateBtnDisabled}
-            onClick={() => this.createRoom()}
+            onClick={() =>  this.createRoom()}
           >
             <span>Create room</span>
           </button>
@@ -548,18 +583,18 @@ class NewWebrtc extends Component {
           ></video>
         </div>
         <ChatSection
-          listOfMessages={listOfMessages}
+          listOfMessages={this.state.listOfMessages}
           handleSendMessage={this.handleSendMessage}
         />
         {/* <div id="chat">
-          {this.state.listOfTextMessages}
+          {this.state.listOfMessages}
           <input
             type="text"
             onKeyPress={(e) => {
               if (e.key === "Enter") {
                 this.setState({
-                  listOfTextMessages:
-                    this.state.listOfTextMessages +
+                  listOfMessages:
+                    this.state.listOfMessages +
                     [e.target.value.toUpperCase() + " "],
                 });
                 this.dataChannel.send(JSON.stringify(e.target.value));

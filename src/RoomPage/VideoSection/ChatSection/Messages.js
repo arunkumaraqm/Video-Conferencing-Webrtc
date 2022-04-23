@@ -50,6 +50,7 @@ const Message = ({ author, content, sameAuthor, messageCreatedByMe }) => {
 
 const Messages = (props) => {
   let listOfMessages = props.listOfMessages;
+
   return (
     <div className="messages_container">
       {listOfMessages.map((message, index) => {

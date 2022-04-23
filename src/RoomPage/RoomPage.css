@@ -13,23 +13,23 @@
   height: 100vh;
   display: flex;
 }
-#buttons {
+/* #buttons {
   display: flex;
   flex-direction: row;
   height: 3.5em;
   width: 20em;
-}
-#videos {
+} */
+/* #videos {
   display: flex;
   flex-direction: row;
   justify-content: right;
-}
-.create-button {
+} */
+/* .create-button {
   position: relative;
   float: right;
   margin-left: 5em;
   margin-top: -1em;
-}
+} */
 .chat_section_container {
   height: 100%;
   width: 20%;

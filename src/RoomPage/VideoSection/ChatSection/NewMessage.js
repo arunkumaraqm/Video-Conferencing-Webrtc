@@ -15,6 +15,7 @@ const NewMessage = (props) => {
       event.preventDefault(); // do not know what this does
       //sendMessage To other user
       props.handleSendMessage(event.target.value);
+      setMessage("");
     }
   };
 
@@ -32,29 +33,12 @@ const NewMessage = (props) => {
         type="text"
         onKeyDown={handleKeyPressed}
       />
-      <img
+      {/* <img
         className="new_message_button"
         src={SendMessageButton}
-        onClick={sendMessage}
-      />
+        onClick={sendMessage}  // you have to do handleSendMessage here
+      /> */}
     </div>
-    /* <div id="chat">
-          {this.state.listOfTextMessages}
-          <input
-            type="text"
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                this.setState({
-                  listOfTextMessages:
-                    this.state.listOfTextMessages +
-                    [e.target.value.toUpperCase() + " "],
-                });
-                this.dataChannel.send(JSON.stringify(e.target.value));
-                e.target.value = "/";
-              }
-            }}
-          ></input>
-        </div> */
   );
 };
 
