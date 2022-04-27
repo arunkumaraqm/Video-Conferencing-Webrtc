@@ -6,7 +6,7 @@ const ParticipantsSection = (props) => {
   return (
     <div className="participants_section_container">
       <ParticipantsLabel />
-      <Participants />
+      <Participants listOfParticipants={props.listOfParticipants} />
     </div>
   );
 };

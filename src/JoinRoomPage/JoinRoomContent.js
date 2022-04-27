@@ -31,10 +31,14 @@ const JoinRoomContent = (props) => {
   const handleJoinToRoom = async () => {
     setIdentityAction(nameValue);
     if (!isRoomHost) {
-      history.push("/room", { isHost: false, name: nameValue, roomId: roomIdValue });
+      history.push("/room", {
+        isHost: false,
+        identity: nameValue,
+        roomId: roomIdValue,
+      });
     } else {
       setRoomIdAction(uuidv4());
-      history.push("/room", {isHost: true, name: nameValue}); //
+      history.push("/room", { isHost: true, identity: nameValue }); //
     }
   };
 

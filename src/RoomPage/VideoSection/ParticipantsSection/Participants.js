@@ -13,30 +13,31 @@ const SingleParticipant = ({ identity, lastItem }) => {
   );
 };
 
-const participants = [
-  {
-    identity: "Akhil",
-  },
-  {
-    identity: "Achyut",
-  },
-  {
-    identity: "Arun",
-  },
-  {
-    identity: "Justin",
-  },
-];
+// const participants = [
+//   {
+//     identity: "Akhil",
+//   },
+//   {
+//     identity: "Achyut",
+//   },
+//   {
+//     identity: "Arun",
+//   },
+//   {
+//     identity: "Justin",
+//   },
+// ];
 
-const Participants = () => {
+const Participants = (props) => {
+  let listOfParticipants = props.listOfParticipants;
   return (
     <div className="participants_container">
-      {participants.map((participant, index) => {
+      {listOfParticipants.map((participant, index) => {
         return (
           <SingleParticipant
             key={participant.identity}
             identity={participant.identity}
-            lastItem={participants.length === index + 1}
+            lastItem={listOfParticipants.length === index + 1}
           />
         );
       })}

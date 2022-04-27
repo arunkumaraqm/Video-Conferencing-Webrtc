@@ -33,14 +33,7 @@
 .chat_section_container {
   height: 100%;
   width: 20%;
-  background-image: linear-gradient(
-    to right top,
-    #ac5959,
-    #c54e4c,
-    #db3f3b,
-    #ee2b26,
-    #ff0000
-  );
+  background-color: #f8e3df;
   display: flex;
   flex-direction: column;
 }
@@ -84,6 +77,8 @@
 .new_message_button {
   position: absolute;
   right: 10%;
+  border: none;
+  background-color: white;
 }
 
 .messages_container {
@@ -211,14 +206,7 @@
 .participants_section_container {
   height: 100%;
   width: 20%;
-  background-image: linear-gradient(
-    to right top,
-    #ac5959,
-    #c54e4c,
-    #db3f3b,
-    #ee2b26,
-    #ff0000
-  );
+  background-color: #f8e3df;
   display: flex;
   flex-direction: column;
 }

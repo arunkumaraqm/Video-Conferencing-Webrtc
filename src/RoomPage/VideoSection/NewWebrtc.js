@@ -6,7 +6,7 @@ import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import ChatSection from "./ChatSection/ChatSection";
 import "../RoomPage.css";
 
-const DEBUG = true;
+const DEBUG = false;
 const log = console.log;
 
 var app = firebase.initializeApp({
@@ -60,9 +60,10 @@ class NewWebrtc extends Component {
     this.localStream = null;
     this.remoteStream = null;
     if (!DEBUG) this.userInfo = props.userInfo;
-    else this.userInfo = {
-      identity: 'Unnamed',
-    }
+    else
+      this.userInfo = {
+        identity: "Unnamed",
+      };
     this.state = {
       roomId: null,
       isMeCaller: null,
@@ -72,6 +73,8 @@ class NewWebrtc extends Component {
       isHangupBtnDisabled: true,
       isRoomDialogVisible: false,
       listOfMessages: [...PRESET_MESSAGES],
+      listOfParticipants: [],
+      isDataChannelOpen: false,
     };
     this.openUserMedia = this.openUserMedia.bind(this);
     this.createRoom = this.createRoom.bind(this);
@@ -130,6 +133,13 @@ class NewWebrtc extends Component {
       isJoinBtnDisabled: false,
       isHangupBtnDisabled: false,
     });
+    this.setState({
+      listOfParticipants: this.state.listOfParticipants.concat([
+        {
+          identity: this.userInfo.identity,
+        },
+      ]),
+    });
   }
 
   setupConnection() {
@@ -139,12 +149,16 @@ class NewWebrtc extends Component {
     log(this.dataChannel);
 
     this.registerPeerConnectionListeners();
+
+    this.setState({
+      isChatDisabled: false,
+    });
   }
 
   async createRoom() {
-    if (!DEBUG) {}
-    else {
-      this.userInfo.identity = 'Hostalice'
+    if (!DEBUG) {
+    } else {
+      this.userInfo.identity = "Hostalice";
     }
     this.setState({
       isCreateBtnDisabled: true,
@@ -307,7 +321,7 @@ class NewWebrtc extends Component {
       receiveChannel.onmessage = (event) => {
         let message = JSON.parse(event.data);
         this.handleRecvMessage(message.content, message.identity);
-      }
+      };
     };
 
     this.dataChannel.onerror = (err) => {
@@ -318,15 +332,24 @@ class NewWebrtc extends Component {
 
     this.dataChannel.onopen = () => {
       log("data channel open");
+      this.state.isDataChannelOpen = true;
+
       let tosend = {
-        content: 'You can now begin chatting.',
-        identity: '',
-      }
+        content: "You can now begin chatting.",
+        identity: "",
+      };
       this.dataChannel.send(JSON.stringify(tosend));
+      this.dataChannel.send(
+        JSON.stringify({
+          content: "",
+          identity: this.userInfo.identity,
+        })
+      );
     };
 
     this.dataChannel.onclose = () => {
       log("data channel closed");
+      this.state.isDataChannelOpen = false;
     };
   };
 
@@ -409,9 +432,9 @@ class NewWebrtc extends Component {
       });
     }
 
-    if (!DEBUG) { }
-    else {
-      this.userInfo.identity = 'Nicebob'
+    if (!DEBUG) {
+    } else {
+      this.userInfo.identity = "Nicebob";
     }
   }
 
@@ -495,42 +518,60 @@ class NewWebrtc extends Component {
   }
 
   handleSendMessage(content) {
-
-    this.setState({ // add the message you sent to your chat thread
-      listOfMessages:
-        this.state.listOfMessages.concat([
-          {
-            identity: this.userInfo.identity,
-            messageCreatedByMe: true,
-            content: content,
-          },
-        ])
+    console.log(content);
+    this.setState({
+      // add the message you sent to your chat thread
+      listOfMessages: this.state.listOfMessages.concat([
+        {
+          identity: this.userInfo.identity,
+          messageCreatedByMe: true,
+          content: content,
+        },
+      ]),
     });
 
     let message = {
       content: content,
-      identity: this.userInfo.identity
-    }
+      identity: this.userInfo.identity,
+    };
     this.dataChannel.send(JSON.stringify(message)); // actually send the message
+
+    //   let name = {
+    //     identity: this.userInfo.identity,
+    //   };
+    //   this.dataChannel.send(JSON.stringify(name));
   }
 
   handleRecvMessage(content, identity) {
     console.log("ondatachannel message:", content);
     // log(this.state);
-    this.setState({ // add the message you received to your chat thread
-      listOfMessages:
-        this.state.listOfMessages.concat([
+    if (content === "") {
+      this.setState({
+        listOfParticipants: this.state.listOfParticipants.concat([
           {
             identity: identity,
-            content: content
-          }])
-    });
+          },
+        ]),
+      });
+    } else
+      this.setState({
+        // add the message you received to your chat thread
+        listOfMessages: this.state.listOfMessages.concat([
+          {
+            identity: identity,
+            content: content,
+          },
+        ]),
+      });
   }
 
   render() {
     return (
       <div className="new-webrtc">
-        <ParticipantsSection />
+        <ParticipantsSection
+          listOfParticipants={this.state.listOfParticipants}
+          handleSendMessage={this.handleSendMessage}
+        />
         <div id="buttons">
           <button
             id="cameraBtn"
@@ -542,7 +583,7 @@ class NewWebrtc extends Component {
           <button
             id="createBtn"
             disabled={this.state.isCreateBtnDisabled}
-            onClick={() =>  this.createRoom()}
+            onClick={() => this.createRoom()}
           >
             <span>Create room</span>
           </button>
@@ -585,6 +626,7 @@ class NewWebrtc extends Component {
         <ChatSection
           listOfMessages={this.state.listOfMessages}
           handleSendMessage={this.handleSendMessage}
+          disabled={!this.state.isDataChannelOpen}
         />
         {/* <div id="chat">
           {this.state.listOfMessages}

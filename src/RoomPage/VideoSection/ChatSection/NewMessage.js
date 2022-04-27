@@ -3,10 +3,10 @@ import SendMessageButton from "../../../resources/images/sendMessageButton.svg";
 
 const NewMessage = (props) => {
   const [message, setMessage] = useState("");
-
+  let textInput = React.createRef();
   const sendMessage = () => {
     // send message to other user
-    console.log(message);
+    props.handleSendMessage(textInput.current.value);
     setMessage("");
   };
 
@@ -22,7 +22,7 @@ const NewMessage = (props) => {
   const handleTextChange = (event) => {
     setMessage(event.target.value);
   };
-
+  // background color white for message container
   return (
     <div className="new_message_container" id="chat">
       <input
@@ -32,12 +32,28 @@ const NewMessage = (props) => {
         placeholder="Type your message..."
         type="text"
         onKeyDown={handleKeyPressed}
+        ref={textInput}
+        disabled={props.disabled}
       />
-      {/* <img
-        className="new_message_button"
-        src={SendMessageButton}
-        onClick={sendMessage}  // you have to do handleSendMessage here
+      {/* <button
+        className=""
+        src=
+        onClick={sendMessage} // you have to do handleSendMessage here
       /> */}
+
+      <button
+        type="submit"
+        className="new_message_button" // styles need to changed
+        onClick={sendMessage}
+        disabled={props.disabled}
+        style={
+          props.disabled
+            ? { backgroundColor: "#f8e3df" }
+            : { backgroundColor: "white" }
+        }
+      >
+        <img src={SendMessageButton} />
+      </button>
     </div>
   );
 };
