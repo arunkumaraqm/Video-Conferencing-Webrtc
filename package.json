@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "17.x"
+    "node": "16.13"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.5.1",
