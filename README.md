@@ -29,8 +29,7 @@ HOST=localhost npm start
 
 ### Generate Fake Video
 
-- Install ffmpeg.
-- Take any small MP4 video (a few seconds). Run `ffmpeg -y -i video.mp4 -pix_fmt yuv420p video.y4m` to produce video.y4m.
+- Install ffmpeg. - Take any small MP4 video (a few seconds). Run `ffmpeg -y -i video.mp4 -pix_fmt yuv420p video.y4m` to produce video.y4m.
 
 ### Open Chrome feeding it the fake video
 

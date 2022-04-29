@@ -5,10 +5,11 @@ import "@firebase/firestore";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import ChatSection from "./ChatSection/ChatSection";
 import BottomBar from "./BottomBar";
+import TabGroup from "./ToggleBar"; 
 import "../RoomPage.css";
 import styled from "styled-components";
 
-const DEBUG = false;
+const DEBUG = true;
 const log = console.log;
 
 var app = firebase.initializeApp({
@@ -92,8 +93,8 @@ class NewWebrtc extends Component {
     this.setupConnection = this.setupConnection.bind(this);
     this.handleRecvMessage = this.handleRecvMessage.bind(this);
     this.handleSendMessage = this.handleSendMessage.bind(this);
-    this.TabGroup = this.TabGroup.bind(this);
-    this.fooBar = this.fooBar.bind(this);
+    // this.TabGroup = this.TabGroup.bind(this);
+    // this.fooBar = this.fooBar.bind(this);
   }
 
   componentDidMount() {
@@ -524,6 +525,7 @@ class NewWebrtc extends Component {
 
   handleSendMessage(content) {
     console.log(content);
+    if (content === '') return
     this.setState({
       // add the message you sent to your chat thread
       listOfMessages: this.state.listOfMessages.concat([
@@ -625,7 +627,13 @@ class NewWebrtc extends Component {
             playsInline
           ></video>
         </div>
-        {this.TabGroup()}
+        <TabGroup
+          active={this.state.active}
+          listOfMessages = {this.state.listOfMessages}
+          handleSendMessage = {this.handleSendMessage}
+          isDataChannelOpen = {this.state.isDataChannelOpen}
+          listOfParticipants = {this.state.listOfParticipants}
+          />
 
         {/* <div id="chat">
           {this.state.listOfMessages}
@@ -647,24 +655,4 @@ class NewWebrtc extends Component {
       </div>
     );
   }
-}
-const Tab = styled.button`
-  font-size: 20px;
-  padding: 10px 60px;
-  cursor: pointer;
-  opacity: 0.6;
-  background: white;
-  border: 0;
-  outline: 0;
-  ${({ active }) =>
-    active &&
-    `
-    border-bottom: 2px solid black;
-    opacity: 1;
-  `}
-`;
-const ButtonGroup = styled.div`
-  display: flex;
-`;
-
-export default NewWebrtc;
+} export default NewWebrtc;
