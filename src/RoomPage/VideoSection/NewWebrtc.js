@@ -4,6 +4,7 @@ import firebase from "@firebase/app";
 import "@firebase/firestore";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import ChatSection from "./ChatSection/ChatSection";
+import BottomBar from "./BottomBar";
 import "../RoomPage.css";
 
 const DEBUG = false;
@@ -572,6 +573,7 @@ class NewWebrtc extends Component {
           listOfParticipants={this.state.listOfParticipants}
           handleSendMessage={this.handleSendMessage}
         />
+        <BottomBar />
         <div id="buttons">
           <button
             id="cameraBtn"

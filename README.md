@@ -35,7 +35,7 @@ HOST=localhost npm start
 ### Open Chrome feeding it the fake video
 
 - You can also download one such fake video from the releases in this repo.
-- Open Chromium from the shell. `chrome --use-fake-device-for-media-stream --use-file-for-fake-video-capture="C:\Users\froma\Downloads\video.y4m"`
+- Open Chromium from the shell. `chrome --use-fake-device-for-media-stream --use-file-for-fake-video-capture="video.y4m"`
 
 ## Webcam permissions
 
