@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import { config } from "./config";
 import firebase from "@firebase/app";
 import "@firebase/firestore";
@@ -6,6 +6,7 @@ import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import ChatSection from "./ChatSection/ChatSection";
 import BottomBar from "./BottomBar";
 import "../RoomPage.css";
+import styled from "styled-components";
 
 const DEBUG = false;
 const log = console.log;
@@ -76,6 +77,7 @@ class NewWebrtc extends Component {
       listOfMessages: [...PRESET_MESSAGES],
       listOfParticipants: [],
       isDataChannelOpen: false,
+      active: "Chat",
     };
     this.openUserMedia = this.openUserMedia.bind(this);
     this.createRoom = this.createRoom.bind(this);
@@ -90,6 +92,8 @@ class NewWebrtc extends Component {
     this.setupConnection = this.setupConnection.bind(this);
     this.handleRecvMessage = this.handleRecvMessage.bind(this);
     this.handleSendMessage = this.handleSendMessage.bind(this);
+    this.TabGroup = this.TabGroup.bind(this);
+    this.fooBar = this.fooBar.bind(this);
   }
 
   componentDidMount() {
@@ -569,10 +573,6 @@ class NewWebrtc extends Component {
   render() {
     return (
       <div className="new-webrtc">
-        <ParticipantsSection
-          listOfParticipants={this.state.listOfParticipants}
-          handleSendMessage={this.handleSendMessage}
-        />
         <BottomBar />
         <div id="buttons">
           <button
@@ -625,11 +625,8 @@ class NewWebrtc extends Component {
             playsInline
           ></video>
         </div>
-        <ChatSection
-          listOfMessages={this.state.listOfMessages}
-          handleSendMessage={this.handleSendMessage}
-          disabled={!this.state.isDataChannelOpen}
-        />
+        {this.TabGroup()}
+
         {/* <div id="chat">
           {this.state.listOfMessages}
           <input
@@ -651,4 +648,23 @@ class NewWebrtc extends Component {
     );
   }
 }
+const Tab = styled.button`
+  font-size: 20px;
+  padding: 10px 60px;
+  cursor: pointer;
+  opacity: 0.6;
+  background: white;
+  border: 0;
+  outline: 0;
+  ${({ active }) =>
+    active &&
+    `
+    border-bottom: 2px solid black;
+    opacity: 1;
+  `}
+`;
+const ButtonGroup = styled.div`
+  display: flex;
+`;
+
 export default NewWebrtc;
