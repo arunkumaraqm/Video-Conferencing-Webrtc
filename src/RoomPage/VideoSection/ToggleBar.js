@@ -1,7 +1,8 @@
 import React, { Component, useState } from "react";
-import ChatSection from "./ChatSection/ChatSection"
-import ParticipantsSection from "./ParticipantsSection/ParticipantsSection"
+import ChatSection from "./ChatSection/ChatSection";
+import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import styled from "styled-components";
+import "../RoomPage.css";
 
 const Tab = styled.button`
   font-size: 20px;
@@ -22,37 +23,37 @@ const ButtonGroup = styled.div`
   display: flex;
 `;
 
-
 function TabGroup(props) {
-    let [active, setActive] = useState("Chat")
-    // setActive(props.active);
-    let listOfMessages = props.listOfMessages;
-    let handleSendMessage = props.handleSendMessage;
-    let isDataChannelOpen = props.isDataChannelOpen;
-    let listOfParticipants = props.listOfParticipants;
+  let [active, setActive] = useState("Chat");
+  // setActive(props.active);
+  let listOfMessages = props.listOfMessages;
+  let handleSendMessage = props.handleSendMessage;
+  let isDataChannelOpen = props.isDataChannelOpen;
+  let listOfParticipants = props.listOfParticipants;
 
-    let fooBar = () => {
-      console.log("MESMER", active);
-      if (active === "Chat")
-        return (
-          <ChatSection
-            listOfMessages={listOfMessages}
-            handleSendMessage={handleSendMessage}
-            disabled={!isDataChannelOpen}
-          />
-        );
-      else if (active === "Participants")
-        return (
-          <ParticipantsSection
-            listOfParticipants={listOfParticipants}
-            handleSendMessage={handleSendMessage}
-          />
-        );
-    }
+  let fooBar = () => {
+    console.log("MESMER", active);
+    if (active === "Chat")
+      return (
+        <ChatSection
+          listOfMessages={listOfMessages}
+          handleSendMessage={handleSendMessage}
+          disabled={!isDataChannelOpen}
+        />
+      );
+    else if (active === "Participants")
+      return (
+        <ParticipantsSection
+          listOfParticipants={listOfParticipants}
+          handleSendMessage={handleSendMessage}
+        />
+      );
+  };
 
-    const types = ["Chat", "Participants"];
-    return (
-      <>
+  const types = ["Chat", "Participants"];
+  return (
+    <>
+      <div className="toggling">
         <ButtonGroup>
           {types.map((type) => (
             <Tab
@@ -67,10 +68,10 @@ function TabGroup(props) {
             </Tab>
           ))}
         </ButtonGroup>
-        {fooBar()}
-      </>
-    );
-  }
- 
+      </div>
+      {fooBar()}
+    </>
+  );
+}
 
-  export default TabGroup;
+export default TabGroup;

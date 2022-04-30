@@ -72,10 +72,9 @@ const BottomBar = ({
 
 const Bar = styled.div`
   position: absolute;
-  right: 20%;
   bottom: 0;
   height: 8%;
-  width: 60%;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;

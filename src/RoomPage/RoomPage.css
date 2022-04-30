@@ -1,24 +1,59 @@
-.room_container {
+/* .room_container {
+  width: 100%;
+  height: 100vh;
+} */
+/* .video-chat {
+  width: 100%;
+  height: 100vh;
+} */
+/* .new-webrtc {
   width: 100%;
   height: 100vh;
   display: flex;
+} */
+#localVideo {
+  width: 80%;
+  height: 80%;
 }
-.video-chat {
-  width: 100%;
-  height: 100vh;
-  display: flex;
+#remoteVideo {
+  width: 80%;
+  height: 80%;
 }
-.new-webrtc {
-  width: 100%;
-  height: 100vh;
-  display: flex;
+.tabgrp {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  color: #f8e3df;
+  background-color: #f8e3df;
 }
-/* #buttons {
+#buttons {
   display: flex;
   flex-direction: row;
   height: 3.5em;
   width: 20em;
-} */
+}
+
+.topbar {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  height: 60px;
+  width: 90%;
+}
+#currentRoom {
+  margin-left: 10%;
+  margin-top: -1%;
+}
+.showHideRoomDialog {
+}
+
+.toggling {
+  /* position: relative; */
+  width: 10%;
+  height: 10%;
+}
+
 /* #videos {
   display: flex;
   flex-direction: row;
@@ -31,25 +66,25 @@
   margin-top: -1em;
 } */
 .chat_section_container {
-  height: 100%;
-  width: 20%;
+  height: 82%;
+  /* width: 20%; */
   background-color: #f8e3df;
   display: flex;
   flex-direction: column;
 }
 
-.chat_label_container {
+/* .chat_label_container {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-}
+} */
 
-.chat_label_paragraph {
+/* .chat_label_paragraph {
   font-weight: 700;
   color: #9ca5ab;
   margin-left: 40px;
   font-size: 16px;
-}
+} */
 
 .new_message_container {
   width: 100%;
@@ -82,7 +117,7 @@
 }
 
 .messages_container {
-  width: calc(100% - 70px);
+  /* width: calc(100% - 70px); */
   margin-left: 30px;
   margin-right: 30px;
   flex-grow: 1;
@@ -179,12 +214,12 @@
 }
 
 .participants_container {
-  width: 100%;
+  /* width: 100%; */
   display: flex;
   justify-content: flex-start;
   flex-direction: column;
   align-content: flex-start;
-  height: 100%;
+  height: 82%;
 }
 
 .participants_paragraph {
@@ -204,8 +239,8 @@
 }
 
 .participants_section_container {
-  height: 100%;
-  width: 20%;
+  height: 82%;
+  /* width: 20%; */
   background-color: #f8e3df;
   display: flex;
   flex-direction: column;
@@ -289,11 +324,16 @@
 }
 
 .videos_container {
-  height: 90%;
-  width: 100%;
-  background-color: #f6f9fb;
   position: relative;
+  height: 100%;
+  /* width: 60%; */
+  margin-top: 25px;
+  background-color: #f6f9fb;
+  /* position: relative; */
+  /* top: 20%; */
   border-radius: 0px 0px 25px 25px;
+  display: flex;
+  flex-direction: row;
 }
 
 .participants {
@@ -320,8 +360,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
+  width: 20%;
+  height: 40%;
   position: relative;
 }
 
@@ -338,13 +378,13 @@
 }
 
 .room {
-  width: 100%;
-  height: 100%;
+  width: 50%;
+  height: 50%;
 }
 
 video {
-  width: 98%;
-  height: 98%;
+  width: 50%;
+  height: 50%;
 }
 
 .room_label {

@@ -5,7 +5,7 @@ import "@firebase/firestore";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import ChatSection from "./ChatSection/ChatSection";
 import BottomBar from "./BottomBar";
-import TabGroup from "./ToggleBar"; 
+import TabGroup from "./ToggleBar";
 import "../RoomPage.css";
 import styled from "styled-components";
 
@@ -496,7 +496,6 @@ class NewWebrtc extends Component {
     if (this.state.isRoomDialogVisible)
       return (
         <div className="showHideRoomDialog">
-          <h2>Join room</h2>
           <div>
             Enter ID for room to join:
             <input
@@ -525,7 +524,7 @@ class NewWebrtc extends Component {
 
   handleSendMessage(content) {
     console.log(content);
-    if (content === '') return
+    if (content === "") return;
     this.setState({
       // add the message you sent to your chat thread
       listOfMessages: this.state.listOfMessages.concat([
@@ -575,43 +574,47 @@ class NewWebrtc extends Component {
   render() {
     return (
       <div className="new-webrtc">
-        <BottomBar />
-        <div id="buttons">
-          <button
-            id="cameraBtn"
-            disabled={this.state.isCameraBtnDisabled}
-            onClick={() => this.openUserMedia()}
-          >
-            <span>Open camera & microphone</span>
-          </button>
-          <button
-            id="createBtn"
-            disabled={this.state.isCreateBtnDisabled}
-            onClick={() => this.createRoom()}
-          >
-            <span>Create room</span>
-          </button>
-          <button
-            id="joinBtn"
-            disabled={this.state.isJoinBtnDisabled}
-            onClick={() => this.joinRoom()}
-          >
-            <span>Join room</span>
-          </button>
-          <button
-            id="hangupBtn"
-            disabled={this.state.isHangupBtnDisabled}
-            onClick={() => this.hangup()}
-          >
-            <span>Hangup</span>
-          </button>
+        <div className="topbar">
+          <div id="buttons">
+            <button
+              id="cameraBtn"
+              disabled={this.state.isCameraBtnDisabled}
+              onClick={() => this.openUserMedia()}
+            >
+              <span>Open camera & microphone</span>
+            </button>
+            <button
+              id="createBtn"
+              disabled={this.state.isCreateBtnDisabled}
+              onClick={() => this.createRoom()}
+            >
+              <span>Create room</span>
+            </button>
+            <button
+              id="joinBtn"
+              disabled={this.state.isJoinBtnDisabled}
+              onClick={() => this.joinRoom()}
+            >
+              <span>Join room</span>
+            </button>
+            <button
+              id="hangupBtn"
+              disabled={this.state.isHangupBtnDisabled}
+              onClick={() => this.hangup()}
+            >
+              <span>Hangup</span>
+            </button>
+          </div>
+
+          <span id="currentRoom">{this.getRoomIdString()}</span>
+
+          {this.showhideRoomDialog()}
         </div>
-
-        <span id="currentRoom">{this.getRoomIdString()}</span>
-
-        {this.showhideRoomDialog()}
-
-        <div id="videos" style={{ width: 500, padding: 10 }}>
+        <div
+          id="videos"
+          style={{ width: "73%", padding: 10, height: 500 }}
+          className="videos_container"
+        >
           <video
             id="localVideo"
             ref={this.localVideoRef}
@@ -627,13 +630,16 @@ class NewWebrtc extends Component {
             playsInline
           ></video>
         </div>
-        <TabGroup
-          active={this.state.active}
-          listOfMessages = {this.state.listOfMessages}
-          handleSendMessage = {this.handleSendMessage}
-          isDataChannelOpen = {this.state.isDataChannelOpen}
-          listOfParticipants = {this.state.listOfParticipants}
+        <div className="tabgrp">
+          <TabGroup
+            active={this.state.active}
+            listOfMessages={this.state.listOfMessages}
+            handleSendMessage={this.handleSendMessage}
+            isDataChannelOpen={this.state.isDataChannelOpen}
+            listOfParticipants={this.state.listOfParticipants}
           />
+        </div>
+        <BottomBar />
 
         {/* <div id="chat">
           {this.state.listOfMessages}
@@ -655,4 +661,5 @@ class NewWebrtc extends Component {
       </div>
     );
   }
-} export default NewWebrtc;
+}
+export default NewWebrtc;

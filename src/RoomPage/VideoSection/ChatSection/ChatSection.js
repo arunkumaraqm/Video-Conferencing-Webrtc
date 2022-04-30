@@ -6,7 +6,7 @@ import NewMessage from "./NewMessage";
 const ChatSection = (props) => {
   return (
     <div className="chat_section_container">
-      <ChatLabel />
+      {/* <ChatLabel /> */}
       <Messages listOfMessages={props.listOfMessages} />
       <NewMessage
         handleSendMessage={props.handleSendMessage}

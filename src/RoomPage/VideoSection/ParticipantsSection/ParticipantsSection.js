@@ -5,7 +5,7 @@ import ParticipantsLabel from "./ParticipantsLabel";
 const ParticipantsSection = (props) => {
   return (
     <div className="participants_section_container">
-      <ParticipantsLabel />
+      {/* <ParticipantsLabel /> */}
       <Participants listOfParticipants={props.listOfParticipants} />
     </div>
   );
