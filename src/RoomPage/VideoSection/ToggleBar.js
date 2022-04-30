@@ -5,8 +5,8 @@ import styled from "styled-components";
 import "../RoomPage.css";
 
 const Tab = styled.button`
-  font-size: 20px;
-  padding: 10px 60px;
+  font-size: 15px;
+  padding: 10px 40px;
   cursor: pointer;
   opacity: 0.6;
   background: white;
@@ -48,9 +48,10 @@ function TabGroup(props) {
           handleSendMessage={handleSendMessage}
         />
       );
+    else if (active === "File Sharing") return <div></div>;
   };
 
-  const types = ["Chat", "Participants"];
+  const types = ["Chat", "Participants", "File Sharing"];
   return (
     <>
       <div className="toggling">

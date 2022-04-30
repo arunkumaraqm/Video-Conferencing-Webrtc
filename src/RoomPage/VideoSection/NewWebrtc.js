@@ -9,7 +9,7 @@ import TabGroup from "./ToggleBar";
 import "../RoomPage.css";
 import styled from "styled-components";
 
-const DEBUG = true;
+const DEBUG = false;
 const log = console.log;
 
 var app = firebase.initializeApp({
