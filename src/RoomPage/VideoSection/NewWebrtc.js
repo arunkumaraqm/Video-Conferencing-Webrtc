@@ -9,7 +9,7 @@ import TabGroup from "./ToggleBar";
 import "../RoomPage.css";
 import styled from "styled-components";
 import { createRef } from "react";
-import { sendFile } from './SendFile'
+import { sendFile } from "./SendFile";
 import { base64ToBlob } from "./Base64Utility";
 const DEBUG = true;
 const log = console.log;
@@ -340,18 +340,18 @@ class NewWebrtc extends Component {
 
           case "start":
             currentFile = [];
-            console.log(message)
+            console.log(message);
             currentFileMeta = message.content;
             console.log("Receiving file", currentFileMeta);
             break;
 
           case "filesharing":
             currentFile.push(atob(message.content));
-            console.log('Progress on file sharing')
+            console.log("Progress on file sharing");
             break;
 
           case "end":
-            console.log('Done with file sharing');
+            console.log("Done with file sharing");
             this.saveFile(currentFileMeta, currentFile);
             break;
         }
@@ -367,12 +367,12 @@ class NewWebrtc extends Component {
     this.dataChannel.onopen = () => {
       log("data channel open");
       this.setState({
-        isDataChannelOpen: true
-      })
+        isDataChannelOpen: true,
+      });
 
       let tosend = {
         content: "You can now begin chatting.",
-        identity: "", 
+        identity: "",
         type: "chat", //
       };
       this.dataChannel.send(JSON.stringify(tosend));
@@ -380,7 +380,7 @@ class NewWebrtc extends Component {
         JSON.stringify({
           content: "",
           identity: this.userInfo.identity,
-          type: "chat" //
+          type: "chat", //
         })
       );
     };
@@ -388,8 +388,8 @@ class NewWebrtc extends Component {
     this.dataChannel.onclose = () => {
       log("data channel closed");
       this.setState({
-        isDataChannelOpen: false
-      })    
+        isDataChannelOpen: false,
+      });
     };
   };
 
@@ -397,10 +397,10 @@ class NewWebrtc extends Component {
     console.log(meta, "QUINT");
     meta = JSON.parse(meta);
     var blob = base64ToBlob(data, meta.filetype);
-    var link = document.createElement('a');
+    var link = document.createElement("a");
     link.href = window.URL.createObjectURL(blob);
     link.download = meta.name;
-    console.log('link has been added');
+    console.log("link has been added");
     link.click();
   }
 
@@ -540,8 +540,8 @@ class NewWebrtc extends Component {
     let givenRoomId = "";
     if (this.state.isRoomDialogVisible)
       return (
-        <div className="showHideRoomDialog">					
-        <h2>Join room</h2>
+        <div className="showHideRoomDialog">
+          <h2>Join room</h2>
           <div>
             Enter ID for room to join:
             <input
@@ -549,8 +549,8 @@ class NewWebrtc extends Component {
               id="room-id"
               onChange={(event) => (givenRoomId = event.target.value)}
               onKeyDown={(event) => {
-                if(event.key == 'Enter'){
-                  this.confirmJoin(givenRoomId)
+                if (event.key == "Enter") {
+                  this.confirmJoin(givenRoomId);
                 }
               }}
             />
@@ -575,7 +575,7 @@ class NewWebrtc extends Component {
 
   handleSendMessage(content) {
     console.log(content);
-    if (content === '') return
+    if (content === "") return;
     this.setState({
       // add the message you sent to your chat thread
       listOfMessages: this.state.listOfMessages.concat([
@@ -592,7 +592,6 @@ class NewWebrtc extends Component {
       identity: this.userInfo.identity,
     };
     this.dataChannel.send(JSON.stringify(message)); // actually send the message
-
   }
 
   handleRecvMessage(content, identity) {
@@ -612,7 +611,7 @@ class NewWebrtc extends Component {
         listOfMessages: this.state.listOfMessages.concat([
           {
             identity: identity,
-            content: content
+            content: content,
           },
         ]),
       });
@@ -620,21 +619,33 @@ class NewWebrtc extends Component {
   fileui() {
     let fileInput = createRef();
 
-    return <div>
-      <input type="file" ref={fileInput}></input>
-      <button onClick={() => {
-        var files = fileInput.current.files;
-        console.log(fileInput)
-        if (files.length > 0) {
-          this.dataChannel.send(JSON.stringify({
-            type: "start",
-            content: JSON.stringify({ name: files[0].name, filetype: files[0].type })
-          }));
-          console.log(files[0], files[0].name);
-          sendFile(files[0], this.dataChannel);
-        }
-      }}> Send </button>
-    </div>
+    return (
+      <div>
+        <input type="file" ref={fileInput}></input>
+        <button
+          onClick={() => {
+            var files = fileInput.current.files;
+            console.log(fileInput);
+            if (files.length > 0) {
+              this.dataChannel.send(
+                JSON.stringify({
+                  type: "start",
+                  content: JSON.stringify({
+                    name: files[0].name,
+                    filetype: files[0].type,
+                  }),
+                })
+              );
+              console.log(files[0], files[0].name);
+              sendFile(files[0], this.dataChannel);
+            }
+          }}
+        >
+          {" "}
+          Send{" "}
+        </button>
+      </div>
+    );
   }
   render() {
     return (
@@ -705,7 +716,7 @@ class NewWebrtc extends Component {
             listOfParticipants={this.state.listOfParticipants}
           />
         </div>
-        <BottomBar />
+        <BottomBar hangup={this.hangup} />
 
         {/* <div id="chat">
           {this.state.listOfMessages}

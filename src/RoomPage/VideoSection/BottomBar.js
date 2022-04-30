@@ -5,18 +5,11 @@ import MicButton from "../../resources/images/mic.svg";
 import SwitchToScreenSharingButton from "../../resources/images/switchToScreenSharing.svg";
 import EndCallButton from "../../resources/images/endCall.png";
 
-const BottomBar = ({
-  clickChat,
-  clickCameraDevice,
-  goToBack,
-  toggleCameraAudio,
-  userVideoAudio,
-  clickScreenSharing,
-  screenShare,
-  videoDevices,
-  showVideoDevices,
-  setShowVideoDevices,
-}) => {
+const BottomBar = (props) => {
+  let clickScreenSharing = props.clickScreenSharing;
+  let screenShare = props.screenShare;
+  let setShowVideoDevices = props.setShowVideoDevices;
+  let hangup = props.hangup;
   const handleToggle = useCallback(
     (e) => {
       setShowVideoDevices((state) => !state);
@@ -63,7 +56,11 @@ const BottomBar = ({
         </div>
         Chat
       </ChatButton> */}
-      <StopButton>
+      <StopButton
+        onClick={() => {
+          hangup();
+        }}
+      >
         <img src={EndCallButton} style={{ paddingLeft: "33%" }}></img>
       </StopButton>
     </Bar>
