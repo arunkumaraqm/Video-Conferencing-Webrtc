@@ -1,7 +1,7 @@
 import React, { Component, useState } from "react";
 import ChatSection from "./ChatSection/ChatSection";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
-import FileSharing from "./FileSharing/FileSharing";
+import FileSharing from "./FileSharing"
 import styled from "styled-components";
 import "../RoomPage.css";
 
