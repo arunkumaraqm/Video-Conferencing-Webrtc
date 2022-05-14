@@ -12,12 +12,14 @@
   display: flex;
 } */
 #localVideo {
-  width: 80%;
-  height: 80%;
+  position: relative;
+  width: 50%;
+  height: 100%;
 }
 #remoteVideo {
-  width: 80%;
-  height: 80%;
+  position: relative;
+  width: 50%;
+  height: 100%;
 }
 .tabgrp {
   position: absolute;

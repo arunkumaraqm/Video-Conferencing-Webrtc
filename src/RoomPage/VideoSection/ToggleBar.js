@@ -1,6 +1,7 @@
 import React, { Component, useState } from "react";
 import ChatSection from "./ChatSection/ChatSection";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
+import FileSharing from "./FileSharing/FileSharing";
 import styled from "styled-components";
 import "../RoomPage.css";
 
@@ -30,6 +31,7 @@ function TabGroup(props) {
   let handleSendMessage = props.handleSendMessage;
   let isDataChannelOpen = props.isDataChannelOpen;
   let listOfParticipants = props.listOfParticipants;
+  let fileui = props.fileui;
 
   let fooBar = () => {
     console.log("MESMER", active);
@@ -48,7 +50,8 @@ function TabGroup(props) {
           handleSendMessage={handleSendMessage}
         />
       );
-    else if (active === "File Sharing") return <div></div>;
+    else if (active === "File Sharing")
+      return <FileSharing fileui={fileui} dataChannel={props.dataChannel} />;
   };
 
   const types = ["Chat", "Participants", "File Sharing"];

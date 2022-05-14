@@ -79,6 +79,7 @@ class NewWebrtc extends Component {
       isRoomDialogVisible: false,
       listOfMessages: [...PRESET_MESSAGES],
       listOfParticipants: [],
+      listOfFiles: [],
       isDataChannelOpen: false,
       active: "Chat",
     };
@@ -353,6 +354,16 @@ class NewWebrtc extends Component {
           case "end":
             console.log("Done with file sharing");
             this.saveFile(currentFileMeta, currentFile);
+            this.setState({
+              // add the message you sent to your chat thread
+              listOfFiles: this.state.listOfFiles.concat([
+                {
+                  identity: this.userInfo.identity,
+                  MessageCreatedByMe: true,
+                  content: currentFileMeta,
+                },
+              ]),
+            });
             break;
         }
       };
@@ -650,7 +661,6 @@ class NewWebrtc extends Component {
   render() {
     return (
       <div className="new-webrtc">
-        {this.fileui()}
         <div className="topbar">
           <div id="buttons">
             <button
@@ -714,6 +724,8 @@ class NewWebrtc extends Component {
             handleSendMessage={this.handleSendMessage}
             isDataChannelOpen={this.state.isDataChannelOpen}
             listOfParticipants={this.state.listOfParticipants}
+            fileui={this.fileui()}
+            dataChannel={this.state.dataChannel}
           />
         </div>
         <BottomBar hangup={this.hangup} />
