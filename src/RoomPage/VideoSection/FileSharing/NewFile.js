@@ -46,23 +46,3 @@ const NewFile = (props) => {
 };
 
 export default NewFile;
-
-/***
- * {() => {
-          var files = fileInput.current.files;
-          console.log(fileInput);
-          if (files.length > 0) {
-            dataChannel.send(
-              JSON.stringify({
-                type: "start",
-                content: JSON.stringify({
-                  name: files[0].name,
-                  filetype: files[0].type,
-                }),
-              })
-            );
-            console.log(files[0], files[0].name);
-            sendFile(files[0], dataChannel);
-          }
-        }}
- */

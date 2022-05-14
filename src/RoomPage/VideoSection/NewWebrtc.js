@@ -727,6 +727,8 @@ class NewWebrtc extends Component {
             handleSendFile={this.handleSendFile}
             isDataChannelOpen={this.state.isDataChannelOpen}
             listOfParticipants={this.state.listOfParticipants}
+            fileui={this.fileui()}
+            dataChannel={this.state.dataChannel}
           />
         </div>
         <BottomBar hangup={this.hangup} />
