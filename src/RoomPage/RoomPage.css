@@ -12,12 +12,14 @@
   display: flex;
 } */
 #localVideo {
-  width: 80%;
-  height: 80%;
+  position: relative;
+  width: 50%;
+  height: 100%;
 }
 #remoteVideo {
-  width: 80%;
-  height: 80%;
+  position: relative;
+  width: 50%;
+  height: 100%;
 }
 .tabgrp {
   position: absolute;
@@ -462,4 +464,9 @@ video {
   width: 60%;
   display: flex;
   flex-direction: column;
+}
+
+.new_file_input{ 
+  color: black;
+  font-size: 24px;
 }

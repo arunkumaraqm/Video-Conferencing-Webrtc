@@ -70,4 +70,4 @@ const Files = (props) => {
   );
 };
 
-export default Files;
+export default File;

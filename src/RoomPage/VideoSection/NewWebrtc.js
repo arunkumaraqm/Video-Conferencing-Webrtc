@@ -79,6 +79,7 @@ class NewWebrtc extends Component {
       isRoomDialogVisible: false,
       listOfMessages: [...PRESET_MESSAGES],
       listOfParticipants: [],
+      listOfFiles: [],
       isDataChannelOpen: false,
       active: "Chat",
     };
@@ -95,13 +96,13 @@ class NewWebrtc extends Component {
     this.setupConnection = this.setupConnection.bind(this);
     this.handleRecvMessage = this.handleRecvMessage.bind(this);
     this.handleSendMessage = this.handleSendMessage.bind(this);
+    this.handleSendFile = this.handleSendFile.bind(this);
     this.saveFile = this.saveFile.bind(this);
     // this.TabGroup = this.TabGroup.bind(this);
     // this.fooBar = this.fooBar.bind(this);
   }
 
-  componentDidMount() {
-    console.log(this.userInfo);
+  componentDidMount() { console.log(this.userInfo);
     this.openUserMedia().then(() => {
       if (!DEBUG) {
         if (this.userInfo.isHost) {
@@ -353,6 +354,16 @@ class NewWebrtc extends Component {
           case "end":
             console.log("Done with file sharing");
             this.saveFile(currentFileMeta, currentFile);
+            this.setState({
+              // add the message you sent to your chat thread
+              listOfFiles: this.state.listOfFiles.concat([
+                {
+                  identity: this.userInfo.identity,
+                  MessageCreatedByMe: true,
+                  content: currentFileMeta,
+                },
+              ]),
+            });
             break;
         }
       };
@@ -616,6 +627,23 @@ class NewWebrtc extends Component {
         ]),
       });
   }
+  handleSendFile(fileInput){
+    var files = fileInput.current.files;
+    console.log(fileInput);
+    if (files.length > 0) {
+      this.dataChannel.send(
+        JSON.stringify({
+          type: "start",
+          content: JSON.stringify({
+            name: files[0].name,
+            filetype: files[0].type,
+          }),
+        })
+      );
+      console.log(files[0], files[0].name);
+      sendFile(files[0], this.dataChannel);
+    };
+  }
   fileui() {
     let fileInput = createRef();
 
@@ -623,23 +651,7 @@ class NewWebrtc extends Component {
       <div>
         <input type="file" ref={fileInput}></input>
         <button
-          onClick={() => {
-            var files = fileInput.current.files;
-            console.log(fileInput);
-            if (files.length > 0) {
-              this.dataChannel.send(
-                JSON.stringify({
-                  type: "start",
-                  content: JSON.stringify({
-                    name: files[0].name,
-                    filetype: files[0].type,
-                  }),
-                })
-              );
-              console.log(files[0], files[0].name);
-              sendFile(files[0], this.dataChannel);
-            }
-          }}
+          onClick={this.handleSendFile}
         >
           {" "}
           Send{" "}
@@ -650,7 +662,6 @@ class NewWebrtc extends Component {
   render() {
     return (
       <div className="new-webrtc">
-        {this.fileui()}
         <div className="topbar">
           <div id="buttons">
             <button
@@ -711,7 +722,9 @@ class NewWebrtc extends Component {
           <TabGroup
             active={this.state.active}
             listOfMessages={this.state.listOfMessages}
+            listOfFiles={this.state.listOfFiles}
             handleSendMessage={this.handleSendMessage}
+            handleSendFile={this.handleSendFile}
             isDataChannelOpen={this.state.isDataChannelOpen}
             listOfParticipants={this.state.listOfParticipants}
           />
