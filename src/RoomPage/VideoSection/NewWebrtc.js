@@ -31,26 +31,9 @@ let PRESET_MESSAGES = [
   //   content: "Hello.",
   // },
   // {
-  //   identity: "Akhil",
-  //   content: "Do you need my help ?",
-  // },
-  // {
   //   content: "All good",
   //   messageCreatedByMe: true,
   //   identity: "me",
-  // },
-  // {
-  //   content: "No help needed",
-  //   messageCreatedByMe: true,
-  //   identity: "me",
-  // },
-  // {
-  //   identity: "Arun",
-  //   content: "Hello guys",
-  // },
-  // {
-  //   identity: "Arun",
-  //   content: "No, I'm good.",
   // },
 ];
 
@@ -62,8 +45,11 @@ class NewWebrtc extends Component {
     this.dataChannel = null;
     this.localVideoRef = React.createRef();
     this.remoteVideoRef = React.createRef();
+    // this.localScreenShareRef = React.createRef();
     this.localStream = null;
     this.remoteStream = null;
+    this.screenStream = null;
+    this.roomRef = null;
     if (!DEBUG) this.userInfo = props.userInfo;
     else
       this.userInfo = {
@@ -81,6 +67,10 @@ class NewWebrtc extends Component {
       listOfParticipants: [],
       listOfFiles: [],
       isDataChannelOpen: false,
+      isScreenShareAccepted: false,
+      isScreenShareButtonDisabled: true,
+      // isViewStreamDisabled: true,
+
       active: "Chat",
     };
     this.openUserMedia = this.openUserMedia.bind(this);
@@ -97,12 +87,15 @@ class NewWebrtc extends Component {
     this.handleRecvMessage = this.handleRecvMessage.bind(this);
     this.handleSendMessage = this.handleSendMessage.bind(this);
     this.handleSendFile = this.handleSendFile.bind(this);
+    this.enableScreensharing = this.enableScreensharing.bind(this);
+    this.acceptScreenshare = this.acceptScreenshare.bind(this);
     this.saveFile = this.saveFile.bind(this);
     // this.TabGroup = this.TabGroup.bind(this);
     // this.fooBar = this.fooBar.bind(this);
   }
 
-  componentDidMount() { console.log(this.userInfo);
+  componentDidMount() { 
+    console.log(this.userInfo, 'MALADY');
     this.openUserMedia().then(() => {
       if (!DEBUG) {
         if (this.userInfo.isHost) {
@@ -137,13 +130,18 @@ class NewWebrtc extends Component {
     remoteVideo.width = 320;
     remoteVideo.play();
 
+    // this.screenStream = new MediaStream();
+    // const screenVideo = this.localScreenShareRef.current;
+    // screenVideo.srcObject = this.screenStream;
+    // screenVideo.width = 320;
+    // screenVideo.play();
+
+
     this.setState({
       isCameraBtnDisabled: true,
       isCreateBtnDisabled: false,
       isJoinBtnDisabled: false,
-      isHangupBtnDisabled: false,
-    });
-    this.setState({
+      isHangupBtnDisabled: true,
       listOfParticipants: this.state.listOfParticipants.concat([
         {
           identity: this.userInfo.identity,
@@ -156,13 +154,146 @@ class NewWebrtc extends Component {
     console.log("Create PeerConnection with configuration: ", config);
     this.peerConnection = new RTCPeerConnection(config);
     this.dataChannel = this.peerConnection.createDataChannel("mydc");
-    log(this.dataChannel);
-
     this.registerPeerConnectionListeners();
 
     this.setState({
       isChatDisabled: false,
+      isScreenShareButtonDisabled: false,
+      // isViewStreamDisabled: false,
+      isHangupBtnDisabled: false
+
     });
+  }
+
+  collectIceCandidates(callerOrCallee) {
+    // accesses callerCandidates or calleeCandidates
+    const CandidatesCollection = this.roomRef.collection(callerOrCallee + "Candidates");
+
+    this.peerConnection.addEventListener("icecandidate", (event) => {
+      if (!event.candidate) {
+        console.log("Got final candidate!");
+        return;
+      }
+      console.log("Got candidate: ", event.candidate);
+      CandidatesCollection.add(event.candidate.toJSON());
+    });
+  }
+
+  listenForRemoteSdp() {
+    this.roomRef.onSnapshot(async (snapshot) => {
+
+      const data = snapshot.data();
+      if (
+        !this.peerConnection.currentRemoteDescription &&
+        data &&
+        data.answer
+      ) {
+        console.log("Got remote description: ", data.answer);
+        const rtcSessionDescription = new RTCSessionDescription(data.answer);
+        await this.peerConnection.setRemoteDescription(rtcSessionDescription);
+      }
+    });
+  }
+
+  async composeAndSendOffer(){
+    const offer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(offer);
+    console.log("Created offer:", offer);
+
+    const roomWithOffer = {
+      offer: {
+        type: offer.type,
+        sdp: offer.sdp,
+      },
+    };
+    await this.roomRef.set(roomWithOffer);
+  }
+
+  async receiveOfferAndSendAnswer(){
+    const roomSnapshot = await this.roomRef.get();
+    const offer = roomSnapshot.data().offer;
+    console.log("Got offer:", offer);
+    await this.peerConnection.setRemoteDescription(
+      new RTCSessionDescription(offer)
+    );
+    const answer = await this.peerConnection.createAnswer();
+    console.log("Created answer:", answer);
+    await this.peerConnection.setLocalDescription(answer);
+
+    const roomWithAnswer = {
+      answer: {
+        type: answer.type,
+        sdp: answer.sdp,
+      },
+    };
+    await this.roomRef.update(roomWithAnswer);
+    console.log(roomWithAnswer);
+  }
+
+  async enableScreensharing() {
+
+    this.screenStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+    });
+    var screenVideoTrack = this.screenStream.getVideoTracks()[0];
+    var sender = this.peerConnection.getSenders().find(function (s) {
+        return s.track.kind == screenVideoTrack.kind;
+      });
+    sender.replaceTrack(screenVideoTrack);
+
+    // this.screenStream.getTracks().forEach(async (track) => {
+    //   console.log(this.screenStream, this.screenStream.getTracks(), 'KEKOA');
+    //   this.peerConnection.addTrack(track, this.screenStream);
+    // });
+    // this.collectIceCandidates('caller');
+    // this.composeAndSendOffer()
+      
+
+    // const localScreenShare = this.localScreenShareRef.current;
+    // localScreenShare.srcObject = this.screenStream;
+    // localScreenShare.width = 320;
+    // localScreenShare.play();
+
+    let tosend = {
+      content: this.userInfo.identity + " started sharing their screen.",
+      identity: '',
+      type: "chat", 
+    };
+    this.dataChannel.send(JSON.stringify(tosend));
+
+    this.setState({
+      amISharingScreen: true
+    })
+  }
+
+  async disableScreensharing() {
+
+    var localVideoTrack = this.localStream.getVideoTracks()[0];
+    var sender = this.peerConnection.getSenders().find(function (s) {
+        return s.track.kind == localVideoTrack.kind;
+      });
+    sender.replaceTrack(localVideoTrack);
+
+    this.setState({
+      amISharingScreen: false
+    })
+  }
+
+  async acceptScreenshare() {
+    this.setState({
+      isScreenShareAccepted: true
+    })
+
+    this.listenForRemoteSdp();    
+    // this.listenForRemoteIceCandidates();
+
+
+    // console.log('YUEtide now setting the local screen share ref with the video', this.screenStream, this.screenStream.getTracks());
+    // console.log('YUEtid also', this.remoteStream.getTracks());
+    // const localScreenShare = this.localScreenShareRef.current;
+    this.remoteVideo.srcObject = this.screenStream; 
+    this.remoteVideo.width = 900;
+    // localScreenShare.play();
   }
 
   async createRoom() {
@@ -176,7 +307,7 @@ class NewWebrtc extends Component {
       isMeCaller: true,
     });
     const db = firebase.firestore(app);
-    const roomRef = await db.collection("rooms").doc();
+    this.roomRef = await db.collection("rooms").doc();
 
     this.setupConnection();
 
@@ -184,67 +315,24 @@ class NewWebrtc extends Component {
       this.peerConnection.addTrack(track, this.localStream);
     });
 
-    // Code for collecting ICE candidates below
-    const callerCandidatesCollection = roomRef.collection("callerCandidates");
-
-    this.peerConnection.addEventListener("icecandidate", (event) => {
-      if (!event.candidate) {
-        console.log("Got final candidate!");
-        return;
-      }
-      console.log("Got candidate: ", event.candidate);
-      callerCandidatesCollection.add(event.candidate.toJSON());
-    });
-    // Code for collecting ICE candidates above
-
-    // Code for creating a room below
-    const offer = await this.peerConnection.createOffer();
-    await this.peerConnection.setLocalDescription(offer);
-    console.log("Created offer:", offer);
-
-    const roomWithOffer = {
-      offer: {
-        type: offer.type,
-        sdp: offer.sdp,
-      },
-    };
-    await roomRef.set(roomWithOffer);
-    this.setState({ roomId: roomRef.id });
-    console.log(`New room created with SDP offer. Room ID: ${roomRef.id}`);
+    this.collectIceCandidates('caller');
+    this.composeAndSendOffer()
+    this.setState({ roomId: this.roomRef.id });
+    console.log(`New room created with SDP offer. Room ID: ${this.roomRef.id}`);
     // Code for creating a room above
 
+
     this.peerConnection.addEventListener("track", (event) => {
-      console.log("Got remote track:", event.streams[0]);
+      console.log("NILLY remote track:", event.streams, event.streams[0]);
       event.streams[0].getTracks().forEach((track) => {
         console.log("Add a track to the remoteStream:", track);
         this.remoteStream.addTrack(track);
       });
+
     });
 
-    roomRef.onSnapshot(async (snapshot) => {
-      const data = snapshot.data();
-      if (
-        !this.peerConnection.currentRemoteDescription &&
-        data &&
-        data.answer
-      ) {
-        console.log("Got remote description: ", data.answer);
-        const rtcSessionDescription = new RTCSessionDescription(data.answer);
-        await this.peerConnection.setRemoteDescription(rtcSessionDescription);
-      }
-    });
-    // Listening for remote session description above
-
-    // Listen for remote ICE candidates below
-    roomRef.collection("calleeCandidates").onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach(async (change) => {
-        if (change.type === "added") {
-          let data = change.doc.data();
-          console.log(`Got new remote ICE candidate: ${JSON.stringify(data)}`);
-          await this.peerConnection.addIceCandidate(new RTCIceCandidate(data));
-        }
-      });
-    });
+    this.listenForRemoteSdp()
+    this.listenForRemoteIceCandidates();
   }
 
   async hangup() {
@@ -275,21 +363,22 @@ class NewWebrtc extends Component {
 
     // Delete room on hangup
     if (this.state.roomId) {
+      // don't need to do this again
       const db = firebase.firestore();
-      const roomRef = db.collection("rooms").doc(this.state.roomId);
-      const calleeCandidates = await roomRef
+      this.roomRef = db.collection("rooms").doc(this.state.roomId);
+      const calleeCandidates = await this.roomRef
         .collection("calleeCandidates")
         .get();
       calleeCandidates.forEach(async (candidate) => {
         await candidate.ref.delete();
       });
-      const callerCandidates = await roomRef
+      const callerCandidates = await this.roomRef
         .collection("callerCandidates")
         .get();
       callerCandidates.forEach(async (candidate) => {
         await candidate.ref.delete();
       });
-      await roomRef.delete();
+      await this.roomRef.delete();
     }
 
     if (!DEBUG) window.location.href = "/"; // go back to introduction page
@@ -415,10 +504,22 @@ class NewWebrtc extends Component {
     link.click();
   }
 
+  listenForRemoteIceCandidates(){
+    this.roomRef.collection("calleeCandidates").onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach(async (change) => {
+        if (change.type === "added") {
+          let data = change.doc.data();
+          console.log(`Got new remote ICE candidate: ${JSON.stringify(data)}`);
+          await this.peerConnection.addIceCandidate(new RTCIceCandidate(data));
+        }
+      });
+    });
+  }
+
   async joinRoomById(givenRoomId) {
     const db = firebase.firestore();
-    const roomRef = db.collection("rooms").doc(`${givenRoomId}`);
-    const roomSnapshot = await roomRef.get();
+    this.roomRef = db.collection("rooms").doc(`${givenRoomId}`);
+    const roomSnapshot = await this.roomRef.get();
     console.log("Got room:", roomSnapshot.exists);
 
     if (roomSnapshot.exists) {
@@ -428,61 +529,34 @@ class NewWebrtc extends Component {
         this.peerConnection.addTrack(track, this.localStream);
       });
 
-      // Code for collecting ICE candidates below
-      const calleeCandidatesCollection = roomRef.collection("calleeCandidates");
-      this.peerConnection.addEventListener("icecandidate", (event) => {
-        if (!event.candidate) {
-          console.log("Got final candidate!");
-          return;
-        }
-        console.log("Got candidate: ", event.candidate);
-        calleeCandidatesCollection.add(event.candidate.toJSON());
-      });
-      // Code for collecting ICE candidates above
+      this.collectIceCandidates('callee');
 
       this.peerConnection.addEventListener("track", (event) => {
-        console.log("Got remote track:", event.streams[0]);
-        event.streams[0].getTracks().forEach((track) => {
-          console.log("Add a track to the remoteStream:", track);
-          this.remoteStream.addTrack(track);
-        });
+        if (this.state.isScreenShareAccepted){
+          // accept screen share was pressed
+          // whatever track is in event is the screen video
+          console.log('EUREKA');
+          console.log('Streams in screen share event', event.streams)
+          event.streams[0].getTracks().forEach((track) => {
+            console.log("Add a track to the screenStream:", track);
+            this.screenStream.addTrack(track);
+          })
+          this.setState({
+            isScreenShareAccepted: false
+          })
+        }
+        else { 
+            console.log('CAPRICE');
+            console.log("Got remote track:", event.streams[0]);
+            event.streams[0].getTracks().forEach((track) => {
+            console.log("Add a track to the remoteStream:", track);
+            this.remoteStream.addTrack(track);
+          });
+        }
       });
 
-      // Code for creating SDP answer below
-      const offer = roomSnapshot.data().offer;
-      console.log("Got offer:", offer);
-      await this.peerConnection.setRemoteDescription(
-        new RTCSessionDescription(offer)
-      );
-      const answer = await this.peerConnection.createAnswer();
-      console.log("Created answer:", answer);
-      await this.peerConnection.setLocalDescription(answer);
-
-      const roomWithAnswer = {
-        answer: {
-          type: answer.type,
-          sdp: answer.sdp,
-        },
-      };
-      await roomRef.update(roomWithAnswer);
-      console.log(roomWithAnswer);
-      // Code for creating SDP answer above
-
-      // Listening for remote ICE candidates below
-      roomRef.collection("callerCandidates").onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach(async (change) => {
-          if (change.type === "added") {
-            let data = change.doc.data();
-            console.log(
-              `Got new remote ICE candidate: ${JSON.stringify(data)}`
-            );
-            await this.peerConnection.addIceCandidate(
-              new RTCIceCandidate(data)
-            );
-          }
-        });
-      });
-      // Listening for remote ICE candidates above
+      this.receiveOfferAndSendAnswer()
+      this.listenForRemoteIceCandidates();
     } else {
       alert("Room does not exist.");
 
@@ -627,6 +701,7 @@ class NewWebrtc extends Component {
         ]),
       });
   }
+
   handleSendFile(fileInput){
     var files = fileInput.current.files;
     console.log(fileInput);
@@ -644,6 +719,7 @@ class NewWebrtc extends Component {
       sendFile(files[0], this.dataChannel);
     };
   }
+
   fileui() {
     let fileInput = createRef();
 
@@ -659,6 +735,7 @@ class NewWebrtc extends Component {
       </div>
     );
   }
+
   render() {
     return (
       <div className="new-webrtc">
@@ -692,6 +769,23 @@ class NewWebrtc extends Component {
             >
               <span>Hangup</span>
             </button>
+            <button
+              id="screenshareBtn"
+              onClick={() => { this.state.amISharingScreen ? this.disableScreensharing() : this.enableScreensharing()}}
+              disabled={this.state.isScreenShareButtonDisabled}
+            >
+              <span>
+                {this.state.amISharingScreen? 'Stop Sharing Screen': 'Screen Share'}
+              </span>
+
+            </button> 
+            {/* <button
+              id="screenshareacceptBtn"
+              onClick={() => {this.acceptScreenshare()}}
+              disabled={this.state.isViewStreamDisabled}
+            >
+              <span>View Stream</span>
+            </button> */}
           </div>
 
           <span id="currentRoom">{this.getRoomIdString()}</span>
@@ -717,6 +811,14 @@ class NewWebrtc extends Component {
             autoPlay
             playsInline
           ></video>
+
+          {/* <video
+            id="localScreenShare"
+            ref={this.localScreenShareRef}
+            muted
+            autoPlay
+            playsInline
+          ></video> */}
         </div>
         <div className="tabgrp">
           <TabGroup
