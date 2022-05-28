@@ -34,7 +34,6 @@ function TabGroup(props) {
   let listOfFiles = props.listOfFiles;
 
   let fooBar = () => {
-    console.log("MESMER", active);
     if (active === "Chat")
       return (
         <ChatSection
@@ -50,7 +49,7 @@ function TabGroup(props) {
           handleSendMessage={handleSendMessage}
         />
       );
-    else if (active === "File Sharing")
+    else if (active === "File Sharing" && props.isDataChannelOpen)
       return (
         <FileSharing 
           listOfFiles={listOfFiles}

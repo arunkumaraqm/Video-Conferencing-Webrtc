@@ -675,6 +675,8 @@ class NewWebrtc extends Component {
     let message = {
       content: content,
       identity: this.userInfo.identity,
+      type: 'chat',
+
     };
     this.dataChannel.send(JSON.stringify(message)); // actually send the message
   }
