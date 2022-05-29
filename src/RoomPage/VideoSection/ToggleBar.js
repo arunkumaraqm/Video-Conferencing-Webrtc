@@ -1,9 +1,11 @@
 import React, { Component, useState } from "react";
 import ChatSection from "./ChatSection/ChatSection";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
-import FileSharing from "./FileSharing"
+import FileSharing from "./FileSharing";
 import styled from "styled-components";
 import "../RoomPage.css";
+import { render } from "@testing-library/react";
+import reactRouterDom from "react-router-dom";
 
 const Tab = styled.button`
   font-size: 15px;
@@ -24,63 +26,84 @@ const ButtonGroup = styled.div`
   display: flex;
 `;
 
-function TabGroup(props) {
-  let [active, setActive] = useState("Chat");
-  // setActive(props.active);
-  let listOfMessages = props.listOfMessages;
-  let handleSendMessage = props.handleSendMessage;
-  let isDataChannelOpen = props.isDataChannelOpen;
-  let listOfParticipants = props.listOfParticipants;
-  let listOfFiles = props.listOfFiles;
-
-  let fooBar = () => {
-    console.log("MESMER", active);
-    if (active === "Chat")
+class TabGroup extends React.Component {
+  constructor(props) {
+    super(props);
+    // setActive(props.active);
+    this.state = {
+      active: "chat",
+      listOfFiles: [],
+      listOfMessages: [],
+      listOfParticipants: [],
+      isDataChannelOpen: null,
+    };
+    this.handleSendFile = props.handleSendFile;
+    this.handleSendFileInformation = props.handleSendFileInformation;
+    this.handleSendMessage = props.handleSendMessage;
+  }
+  static getDerivedStateFromProps(props, state) {
+    console.log("getDerivedStateFromProps method is called");
+    return {
+      listOfFiles: props.listOfFiles,
+      listOfMessages: props.listOfMessages,
+      listOfParticipants: props.listOfParticipants,
+      isDataChannelOpen: props.isDataChannelOpen,
+    };
+  }
+  fooBar() {
+    console.log("MESMER", this.state.active);
+    if (this.state.active === "Chat")
       return (
         <ChatSection
-          listOfMessages={listOfMessages}
-          handleSendMessage={handleSendMessage}
-          disabled={!isDataChannelOpen}
+          listOfMessages={this.state.listOfMessages}
+          handleSendMessage={this.handleSendMessage}
+          disabled={!this.state.isDataChannelOpen}
         />
       );
-    else if (active === "Participants")
+    else if (this.state.active === "Participants")
       return (
         <ParticipantsSection
-          listOfParticipants={listOfParticipants}
-          handleSendMessage={handleSendMessage}
+          listOfParticipants={this.state.listOfParticipants}
+          handleSendMessage={this.handleSendMessage}
         />
       );
-    else if (active === "File Sharing")
+    else if (this.state.active === "File Sharing") {
+      console.log(this.state.listOfFiles, "melbourne");
       return (
-        <FileSharing 
-          listOfFiles={listOfFiles}
-          handleSendFile={props.handleSendFile} 
+        <FileSharing
+          listOfFiles={this.state.listOfFiles}
+          handleSendFile={this.handleSendFile}
+          handleSendFileInformation={this.handleSendFileInformation}
         />
       );
-  };
-
-  const types = ["Chat", "Participants", "File Sharing"];
-  return (
-    <>
-      <div className="toggling">
-        <ButtonGroup>
-          {types.map((type) => (
-            <Tab
-              key={type}
-              active={active === type}
-              onClick={() => {
-                // console.log(type);
-                setActive(type);
-              }}
-            >
-              {type}
-            </Tab>
-          ))}
-        </ButtonGroup>
-      </div>
-      {fooBar()}
-    </>
-  );
+    }
+  }
+  render() {
+    const types = ["Chat", "Participants", "File Sharing"];
+    return (
+      <>
+        <div className="toggling">
+          <ButtonGroup>
+            {types.map((type) => (
+              <Tab
+                key={type}
+                active={this.state.active === type}
+                onClick={() => {
+                  // console.log(type);
+                  this.setState({
+                    active: type,
+                  });
+                }}
+              >
+                {type}
+              </Tab>
+            ))}
+          </ButtonGroup>
+        </div>
+        {this.fooBar()}
+      </>
+    );
+  }
 }
 
 export default TabGroup;

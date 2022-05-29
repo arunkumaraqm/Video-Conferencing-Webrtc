@@ -82,6 +82,7 @@ class NewWebrtc extends Component {
       listOfFiles: [],
       isDataChannelOpen: false,
       active: "Chat",
+      list: ["1", "300", "222"],
     };
     this.openUserMedia = this.openUserMedia.bind(this);
     this.createRoom = this.createRoom.bind(this);
@@ -101,8 +102,12 @@ class NewWebrtc extends Component {
     // this.TabGroup = this.TabGroup.bind(this);
     // this.fooBar = this.fooBar.bind(this);
   }
-
-  componentDidMount() { console.log(this.userInfo);
+  updatelist(textin) {
+    this.setState({ list: this.state.list.concat([textin]) });
+    console.log(this.state.list, "killarney");
+  }
+  componentDidMount() {
+    console.log(this.userInfo);
     this.openUserMedia().then(() => {
       if (!DEBUG) {
         if (this.userInfo.isHost) {
@@ -344,16 +349,6 @@ class NewWebrtc extends Component {
             console.log(message);
             currentFileMeta = message.content;
             console.log("Receiving file", currentFileMeta);
-            break;
-
-          case "filesharing":
-            currentFile.push(atob(message.content));
-            console.log("Progress on file sharing");
-            break;
-
-          case "end":
-            console.log("Done with file sharing");
-            this.saveFile(currentFileMeta, currentFile);
             this.setState({
               // add the message you sent to your chat thread
               listOfFiles: this.state.listOfFiles.concat([
@@ -364,6 +359,18 @@ class NewWebrtc extends Component {
                 },
               ]),
             });
+            console.log(this.state.listOfFiles, "perth");
+            break;
+
+          case "filesharing":
+            currentFile.push(atob(message.content));
+            console.log("Progress on file sharing");
+            break;
+
+          case "end":
+            console.log("Done with file sharing");
+            this.saveFile(currentFileMeta, currentFile);
+            console.log(this.state.listOfFiles, "yellow");
             break;
         }
       };
@@ -553,7 +560,7 @@ class NewWebrtc extends Component {
       return (
         <div className="showHideRoomDialog">
           <h2>Join room</h2>
-          <div>
+          <div style={{ marginTop: "-1em" }}>
             Enter ID for room to join:
             <input
               type="text"
@@ -599,6 +606,7 @@ class NewWebrtc extends Component {
     });
 
     let message = {
+      type: "chat",
       content: content,
       identity: this.userInfo.identity,
     };
@@ -627,8 +635,8 @@ class NewWebrtc extends Component {
         ]),
       });
   }
-  handleSendFile(fileInput){
-    var files = fileInput.current.files;
+  handleSendFileInformation(fileInput) {
+    var files = fileInput.current.files; // modified according to above
     console.log(fileInput);
     if (files.length > 0) {
       this.dataChannel.send(
@@ -641,27 +649,51 @@ class NewWebrtc extends Component {
         })
       );
       console.log(files[0], files[0].name);
-      sendFile(files[0], this.dataChannel);
-    };
+      this.setState({
+        listOfFiles: this.state.listOfFiles.concat([
+          {
+            identity: this.userInfo.identity,
+            MessageCreatedByMe: true,
+            content: files[0],
+          },
+        ]),
+      });
+    }
   }
+  handleSendFile(file) {
+    sendFile(file, this.dataChannel);
+  }
+
   fileui() {
     let fileInput = createRef();
 
     return (
       <div>
         <input type="file" ref={fileInput}></input>
-        <button
-          onClick={this.handleSendFile}
-        >
-          {" "}
-          Send{" "}
-        </button>
+        <button onClick={this.handleSendFile}> Send </button>
       </div>
     );
   }
   render() {
     return (
       <div className="new-webrtc">
+        {/* <div>
+          <p> Parent</p>
+          <input
+            type="text"
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                this.updatelist(event.target.value);
+              }
+            }}
+          />
+
+          {this.state.list.map((message, index) => {
+            return <p>{message}</p>;
+          })}
+
+          {/* <Show list={this.state.list}></Show> */}
+        {/* </div> */}
         <div className="topbar">
           <div id="buttons">
             <button
@@ -725,6 +757,7 @@ class NewWebrtc extends Component {
             listOfFiles={this.state.listOfFiles}
             handleSendMessage={this.handleSendMessage}
             handleSendFile={this.handleSendFile}
+            handleSendFileInformation={this.handleSendFileInformation}
             isDataChannelOpen={this.state.isDataChannelOpen}
             listOfParticipants={this.state.listOfParticipants}
             fileui={this.fileui()}
