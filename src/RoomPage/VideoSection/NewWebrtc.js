@@ -11,7 +11,7 @@ import styled from "styled-components";
 import { createRef } from "react";
 import { sendFile } from "./SendFile";
 import { base64ToBlob } from "./Base64Utility";
-const DEBUG = true;
+const DEBUG = false;
 const log = console.log;
 
 var app = firebase.initializeApp({
@@ -88,6 +88,8 @@ class NewWebrtc extends Component {
     this.handleRecvMessage = this.handleRecvMessage.bind(this);
     this.handleSendMessage = this.handleSendMessage.bind(this);
     this.handleSendFile = this.handleSendFile.bind(this);
+    this.handleRequestFile = this.handleRequestFile.bind(this);
+    this.handleSendFileInformation = this.handleSendFileInformation.bind(this);
     this.enableScreensharing = this.enableScreensharing.bind(this);
     this.acceptScreenshare = this.acceptScreenshare.bind(this);
     this.saveFile = this.saveFile.bind(this);
@@ -424,7 +426,7 @@ class NewWebrtc extends Component {
       let currentFileMeta;
       let currentFile = [];
       receiveChannel.onmessage = (event) => {
-        // console.log(event.data);
+        console.log(event.data, 'ULNA');
         let message = JSON.parse(event.data);
 
         switch (message.type) {
@@ -442,7 +444,7 @@ class NewWebrtc extends Component {
               listOfFiles: this.state.listOfFiles.concat([
                 {
                   identity: this.userInfo.identity,
-                  MessageCreatedByMe: true,
+                  fileCreatedByMe: false,
                   content: currentFileMeta,
                 },
               ]),
@@ -460,6 +462,11 @@ class NewWebrtc extends Component {
             this.saveFile(currentFileMeta, currentFile);
             console.log(this.state.listOfFiles, "yellow");
             break;
+
+          case "filerequest":
+            this.handleSendFile(message.content);
+            break;
+
         }
       };
     };
@@ -499,9 +506,17 @@ class NewWebrtc extends Component {
     };
   };
 
+  handleRequestFile(content){
+    this.dataChannel.send(JSON.stringify({
+      content: content,
+      identity: this.userInfo.identity,
+      type: "filerequest",
+    }))
+  }
+
   saveFile(meta, data) {
     console.log(meta, "QUINT");
-    meta = JSON.parse(meta);
+    // meta = JSON.parse(meta);
     var blob = base64ToBlob(data, meta.filetype);
     var link = document.createElement("a");
     link.href = window.URL.createObjectURL(blob);
@@ -710,25 +725,32 @@ class NewWebrtc extends Component {
         ]),
       });
   }
-  handleSendFileInformation(fileInput) {
+  async handleSendFileInformation(fileInput) {
     var files = fileInput.current.files; // modified according to above
-    console.log(fileInput);
     if (files.length > 0) {
+      let jsontosend = {
+        lastModified: files[0].lastModified,
+        lastModifiedDate: files[0].lastModifiedDate,
+        name: files[0].name,
+        size: files[0].size,
+        type: files[0].type,
+        webkitRelativePath: files[0].webkitRelativePath
+      }
+
+      console.log(jsontosend, 'junny');
+
       this.dataChannel.send(
         JSON.stringify({
           type: "start",
-          content: JSON.stringify({
-            name: files[0].name,
-            filetype: files[0].type,
-          }),
+          content: jsontosend
         })
       );
-      console.log(files[0], files[0].name);
+      console.log(files[0], files[0].name, 'KLEON');
       this.setState({
         listOfFiles: this.state.listOfFiles.concat([
           {
             identity: this.userInfo.identity,
-            MessageCreatedByMe: true,
+            fileCreatedByMe: true,
             content: files[0],
           },
         ]),
@@ -736,18 +758,7 @@ class NewWebrtc extends Component {
     }
   }
   handleSendFile(file) {
-    sendFile(file, this.dataChannel);
-  }
-
-  fileui() {
-    let fileInput = createRef();
-
-    return (
-      <div>
-        <input type="file" ref={fileInput}></input>
-        <button onClick={this.handleSendFile}> Send </button>
-      </div>
-    );
+    sendFile(file.name, this.dataChannel);
   }
 
   render() {
@@ -857,11 +868,10 @@ class NewWebrtc extends Component {
             listOfMessages={this.state.listOfMessages}
             listOfFiles={this.state.listOfFiles}
             handleSendMessage={this.handleSendMessage}
-            handleSendFile={this.handleSendFile}
+            handleRequestFile={this.handleRequestFile}
             handleSendFileInformation={this.handleSendFileInformation}
             isDataChannelOpen={this.state.isDataChannelOpen}
             listOfParticipants={this.state.listOfParticipants}
-            fileui={this.fileui()}
             dataChannel={this.state.dataChannel}
           />
         </div>

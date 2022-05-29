@@ -31,13 +31,13 @@ class TabGroup extends React.Component {
     super(props);
     // setActive(props.active);
     this.state = {
-      active: "chat",
+      active: "Chat",
       listOfFiles: [],
       listOfMessages: [],
       listOfParticipants: [],
       isDataChannelOpen: null,
     };
-    this.handleSendFile = props.handleSendFile;
+    this.handleRequestFile = props.handleRequestFile;
     this.handleSendFileInformation = props.handleSendFileInformation;
     this.handleSendMessage = props.handleSendMessage;
   }
@@ -72,7 +72,7 @@ class TabGroup extends React.Component {
       return (
         <FileSharing
           listOfFiles={this.state.listOfFiles}
-          handleSendFile={this.handleSendFile}
+          handleRequestFile={this.handleRequestFile}
           handleSendFileInformation={this.handleSendFileInformation}
         />
       );
@@ -89,7 +89,6 @@ class TabGroup extends React.Component {
                 key={type}
                 active={this.state.active === type}
                 onClick={() => {
-                  // console.log(type);
                   this.setState({
                     active: type,
                   });
