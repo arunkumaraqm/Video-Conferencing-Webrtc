@@ -5,66 +5,84 @@ import MicButton from "../../resources/images/mic.svg";
 import SwitchToScreenSharingButton from "../../resources/images/switchToScreenSharing.svg";
 import EndCallButton from "../../resources/images/endCall.png";
 
-const BottomBar = (props) => {
-  let clickScreenSharing = props.clickScreenSharing;
-  let screenShare = props.screenShare;
-  let setShowVideoDevices = props.setShowVideoDevices;
-  let hangup = props.hangup;
-  const handleToggle = useCallback(
-    (e) => {
-      setShowVideoDevices((state) => !state);
-    },
-    [setShowVideoDevices]
-  );
+class BottomBar extends React.Component {
 
-  return (
-    <Bar>
-      <CameraButton>
-        {/* <div>
-            {userVideoAudio.video ? (
-              <FaIcon className="fas fa-video"></FaIcon>
-            ) : (
-              <FaIcon className="fas fa-video-slash"></FaIcon>
-            )}
-          </div> */}
-        <img src={CameraSvg} style={{ paddingLeft: "33%" }}></img>
-      </CameraButton>
-      <CameraButton>
-        {/* <div>
-            {userVideoAudio.audio ? (
-              <FaIcon className="fas fa-microphone"></FaIcon>
-            ) : (
-              <FaIcon className="fas fa-microphone-slash"></FaIcon>
-            )}
-          </div> */}
-        <img src={MicButton} style={{ paddingLeft: "33%" }}></img>
-      </CameraButton>
-      <ScreenButton onClick={clickScreenSharing}>
-        <div>
-          <FaIcon
-            className={`fas fa-desktop ${screenShare ? "sharing" : ""}`}
-          ></FaIcon>
-        </div>
-        <img
-          src={SwitchToScreenSharingButton}
-          style={{ paddingLeft: "33%" }}
-        ></img>
-      </ScreenButton>
-      {/* <ChatButton onClick={clickChat}>
-        <div>
-          <FaIcon className="fas fa-comments"></FaIcon>
-        </div>
-        Chat
-      </ChatButton> */}
-      <StopButton
-        onClick={() => {
-          hangup();
-        }}
-      >
-        <img src={EndCallButton} style={{ paddingLeft: "33%" }}></img>
-      </StopButton>
-    </Bar>
-  );
+  constructor(props){
+    super(props)
+    this.screenShare = props.screenShare;
+    this.hangup = props.hangup;
+    this.state = {
+      isScreenShareButtonDisabled: null
+    }
+    // let setShowVideoDevices = props.setShowVideoDevices;    
+    // let clickScreenSharing = props.clickScreenSharing;
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    console.log("getDerivedStateFromProps method is called");
+    return {
+      isScreenShareButtonDisabled: props.isScreenShareButtonDisabled
+    };
+  }
+  
+  // const handleToggle = useCallback(
+  //   (e) => {
+  //     setShowVideoDevices((state) => !state);
+  //   },
+  //   [setShowVideoDevices]
+  // );
+  render(){
+    return (
+      <Bar>
+        <CameraButton>
+          {/* <div>
+              {userVideoAudio.video ? (
+                <FaIcon className="fas fa-video"></FaIcon>
+              ) : (
+                <FaIcon className="fas fa-video-slash"></FaIcon>
+              )}
+            </div> */}
+          <img src={CameraSvg} style={{ paddingLeft: "33%" }}></img>
+        </CameraButton>
+        <CameraButton>
+          {/* <div>
+              {userVideoAudio.audio ? (
+                <FaIcon className="fas fa-microphone"></FaIcon>
+              ) : (
+                <FaIcon className="fas fa-microphone-slash"></FaIcon>
+              )}
+            </div> */}
+          <img src={MicButton} style={{ paddingLeft: "33%" }}></img>
+        </CameraButton>
+        <ScreenButton onClick={()=>{
+          if (!this.state.isScreenShareButtonDisabled){
+            this.screenShare();
+          }
+        }}>
+          <div>
+            <FaIcon
+              className={`fas fa-desktop ${!this.state.isScreenShareButtonDisabled ? "sharing" : ""}`}
+            ></FaIcon>
+          </div>
+          <img
+            src={SwitchToScreenSharingButton}
+            style={{ paddingLeft: "33%" }}
+          ></img>
+        </ScreenButton>
+        {/* <ChatButton onClick={clickChat}>
+          <div>
+            <FaIcon className="fas fa-comments"></FaIcon>
+          </div>
+          Chat
+        </ChatButton> */}
+        <StopButton
+          onClick={this.hangup}
+        >
+          <img src={EndCallButton} style={{ paddingLeft: "33%" }}></img>
+        </StopButton>
+      </Bar>
+    );
+  }
 };
 
 const Bar = styled.div`

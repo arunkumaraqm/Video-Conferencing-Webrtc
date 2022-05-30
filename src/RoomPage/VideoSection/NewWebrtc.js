@@ -7,7 +7,7 @@ import TabGroup from "./ToggleBar";
 import "../RoomPage.css";
 import { sendFile } from "./SendFile";
 import { base64ToBlob } from "./Base64Utility";
-const DEBUG = true;
+const DEBUG = false;
 const log = console.log;
 
 var app = firebase.initializeApp({
@@ -89,6 +89,7 @@ class NewWebrtc extends Component {
     this.handleSendFileInformation = this.handleSendFileInformation.bind(this);
     this.enableScreensharing = this.enableScreensharing.bind(this);
     this.acceptScreenshare = this.acceptScreenshare.bind(this);
+    this.screenShare = this.screenShare.bind(this);
     this.saveFile = this.saveFile.bind(this);
     // this.TabGroup = this.TabGroup.bind(this);
     // this.fooBar = this.fooBar.bind(this);
@@ -238,6 +239,10 @@ class NewWebrtc extends Component {
     this.screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
     });
+    this.screenStream.oninactive = () => {
+      this.disableScreensharing();
+    }
+
     var screenVideoTrack = this.screenStream.getVideoTracks()[0];
     var sender = this.peerConnection.getSenders().find(function (s) {
         return s.track.kind === screenVideoTrack.kind;
@@ -257,12 +262,12 @@ class NewWebrtc extends Component {
   }
 
   async disableScreensharing() {
-
     var localVideoTrack = this.localStream.getVideoTracks()[0];
     var sender = this.peerConnection.getSenders().find(function (s) {
         return s.track.kind === localVideoTrack.kind;
       });
     sender.replaceTrack(localVideoTrack);
+    this.screenStream.getTracks().forEach(track => track.stop())
 
     this.setState({
       amISharingScreen: false
@@ -349,6 +354,8 @@ class NewWebrtc extends Component {
       isJoinBtnDisabled: true,
       isHangupBtnDisabled: true,
       isRoomDialogVisible: false,
+      isScreenShareButtonDisabled: true,
+      amISharingScreen: false
     });
 
     // Delete room on hangup
@@ -758,6 +765,10 @@ class NewWebrtc extends Component {
     sendFile(file, this.dataChannel);
   }
 
+  screenShare(){
+    return this.state.amISharingScreen ? this.disableScreensharing() : this.enableScreensharing()
+  }
+
   render() {
     return (
       <div className="new-webrtc">
@@ -794,7 +805,7 @@ class NewWebrtc extends Component {
             </button>
             <button
               id="screenshareBtn"
-              onClick={() => { this.state.amISharingScreen ? this.disableScreensharing() : this.enableScreensharing()}}
+              onClick={this.screenShare}
               disabled={this.state.isScreenShareButtonDisabled}
             >
               <span>
@@ -841,7 +852,7 @@ class NewWebrtc extends Component {
             dataChannel={this.state.dataChannel}
           />
         </div>
-        <BottomBar hangup={this.hangup} />
+        <BottomBar hangup={this.hangup} screenShare={this.screenShare} isScreenShareButtonDisabled={this.state.isScreenShareButtonDisabled}/>
       </div>
     );
   }
