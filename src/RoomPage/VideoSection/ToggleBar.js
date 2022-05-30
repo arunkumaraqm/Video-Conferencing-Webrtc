@@ -1,11 +1,9 @@
-import React, { Component, useState } from "react";
+import React from "react";
 import ChatSection from "./ChatSection/ChatSection";
 import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
 import FileSharing from "./FileSharing";
 import styled from "styled-components";
 import "../RoomPage.css";
-import { render } from "@testing-library/react";
-import reactRouterDom from "react-router-dom";
 
 const Tab = styled.button`
   font-size: 15px;
@@ -67,7 +65,7 @@ class TabGroup extends React.Component {
           handleSendMessage={this.handleSendMessage}
         />
       );
-    else if (this.state.active === "File Sharing") {
+    else if (this.state.active === "File Sharing" && this.state.isDataChannelOpen) {
       console.log(this.state.listOfFiles, "melbourne");
       return (
         <FileSharing

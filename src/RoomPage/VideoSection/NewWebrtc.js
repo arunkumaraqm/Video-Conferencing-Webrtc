@@ -1,17 +1,13 @@
-import React, { Component, useState } from "react";
+import React, { Component} from "react";
 import { config } from "./config";
 import firebase from "@firebase/app";
 import "@firebase/firestore";
-import ParticipantsSection from "./ParticipantsSection/ParticipantsSection";
-import ChatSection from "./ChatSection/ChatSection";
 import BottomBar from "./BottomBar";
 import TabGroup from "./ToggleBar";
 import "../RoomPage.css";
-import styled from "styled-components";
-import { createRef } from "react";
 import { sendFile } from "./SendFile";
 import { base64ToBlob } from "./Base64Utility";
-const DEBUG = false;
+const DEBUG = true;
 const log = console.log;
 
 var app = firebase.initializeApp({
@@ -243,22 +239,9 @@ class NewWebrtc extends Component {
     });
     var screenVideoTrack = this.screenStream.getVideoTracks()[0];
     var sender = this.peerConnection.getSenders().find(function (s) {
-        return s.track.kind == screenVideoTrack.kind;
+        return s.track.kind === screenVideoTrack.kind;
       });
     sender.replaceTrack(screenVideoTrack);
-
-    // this.screenStream.getTracks().forEach(async (track) => {
-    //   console.log(this.screenStream, this.screenStream.getTracks(), 'KEKOA');
-    //   this.peerConnection.addTrack(track, this.screenStream);
-    // });
-    // this.collectIceCandidates('caller');
-    // this.composeAndSendOffer()
-      
-
-    // const localScreenShare = this.localScreenShareRef.current;
-    // localScreenShare.srcObject = this.screenStream;
-    // localScreenShare.width = 320;
-    // localScreenShare.play();
 
     let tosend = {
       content: this.userInfo.identity + " started sharing their screen.",
@@ -276,7 +259,7 @@ class NewWebrtc extends Component {
 
     var localVideoTrack = this.localStream.getVideoTracks()[0];
     var sender = this.peerConnection.getSenders().find(function (s) {
-        return s.track.kind == localVideoTrack.kind;
+        return s.track.kind === localVideoTrack.kind;
       });
     sender.replaceTrack(localVideoTrack);
 
@@ -467,6 +450,9 @@ class NewWebrtc extends Component {
             this.handleSendFile(message.content);
             break;
 
+          default:
+            console.log("Invalid message sent via data channel.");
+
         }
       };
     };
@@ -655,7 +641,7 @@ class NewWebrtc extends Component {
               id="room-id"
               onChange={(event) => (givenRoomId = event.target.value)}
               onKeyDown={(event) => {
-                if (event.key == "Enter") {
+                if (event.key === "Enter") {
                   this.confirmJoin(givenRoomId);
                 }
               }}
@@ -694,7 +680,6 @@ class NewWebrtc extends Component {
     });
 
     let message = {
-      type: "chat",
       content: content,
       identity: this.userInfo.identity,
       type: 'chat',
@@ -758,7 +743,7 @@ class NewWebrtc extends Component {
     }
   }
   handleSendFile(file) {
-    sendFile(file.name, this.dataChannel);
+    sendFile(file, this.dataChannel);
   }
 
   render() {

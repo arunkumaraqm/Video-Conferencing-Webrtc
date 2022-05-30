@@ -51,7 +51,10 @@ class FileSharing extends Component {
         <button
           type="submit"
           className="new_message_button" // styles need to changed
-          onClick={this.sendFileInformation}
+          onClick={()=>{
+            this.sendFileInformation();
+            this.fileInput.current.value = "";
+          }}
           // disabled={props.disabled}
           style={{ backgroundColor: "#f8e3df" }}
           //   props.disabled
@@ -64,7 +67,7 @@ class FileSharing extends Component {
     );
   }
 
-  File(key, author, content, sameAuthor, fileCreatedByMe) {
+  File(idx, author, content, fileCreatedByMe) {
     const alignClass = fileCreatedByMe
       ? "message_align_right"
       : "message_align_left";
@@ -78,10 +81,15 @@ class FileSharing extends Component {
 
     return (
       <div className={`message_container ${alignClass}`}>
-        {!sameAuthor && <p className="message_title">{authorText}</p>}
+        <p className="message_title">{authorText}</p>
         <button
+          key={idx}
           className={`message_content ${contentAdditionalStyles}`}
-          onClick={()=>this.handleRequestFile(content)}
+          onClick={()=>{
+            if (!fileCreatedByMe)
+              this.handleRequestFile(this.state.listOfFiles[idx].content)
+            console.log('PINATA', idx, this.state.listOfFiles[idx].content);
+          }}
         >
           {content.name}
         </button>
@@ -95,17 +103,10 @@ class FileSharing extends Component {
       <div className="messages_container">
         <div>
           {this.state.listOfFiles.map((file, index) => {
-            const sameAuthor =
-              index > 0 &&
-              file.identity === this.state.listOfFiles[index - 1].identity;
-
-            console.log(file, 'LARCENY')
-
             return this.File(
               index,
               file.identity,
               file.content,
-              sameAuthor,
               file.fileCreatedByMe
             );
           })}
