@@ -2,7 +2,6 @@ import { arrayBufferToBase64 } from "./Base64Utility";
 var CHUNK_MAX = 16000;
 
 function sendFile(file, dataChannel) {
-	file = new Blob([JSON.stringify(file)])
 	var reader = new FileReader();
 	reader.onloadend = function (evt) {
 		if (evt.target.readyState === FileReader.DONE) {

@@ -46,6 +46,7 @@ class NewWebrtc extends Component {
     this.remoteStream = null;
     this.screenStream = null;
     this.roomRef = null;
+    this.listOfFileObjects = []
     if (!DEBUG) this.userInfo = props.userInfo;
     else
       this.userInfo = {
@@ -406,47 +407,58 @@ class NewWebrtc extends Component {
 
     this.peerConnection.ondatachannel = (event) => {
       var receiveChannel = event.channel;
-      let currentFileMeta;
-      let currentFile = [];
+      let currentFile = []; // stores binary contents of file, is updated chunk by chunk
+      let idx = -1; // stores location of file in this.state.listOfFiles since the file details are taken from that lsit
       receiveChannel.onmessage = (event) => {
         console.log(event.data, 'ULNA');
         let message = JSON.parse(event.data);
 
         switch (message.type) {
-          case "chat":
+          case "chat": // on the recvr's side
             this.handleRecvMessage(message.content, message.identity);
             break;
 
-          case "start":
-            currentFile = [];
+          case "start":// on the recvr's side
             console.log(message);
-            currentFileMeta = message.content;
-            console.log("Receiving file", currentFileMeta);
+            console.log("Receiving file", message.content);
             this.setState({
               // add the message you sent to your chat thread
               listOfFiles: this.state.listOfFiles.concat([
                 {
                   identity: this.userInfo.identity,
                   fileCreatedByMe: false,
-                  content: currentFileMeta,
+                  content: message.content,
                 },
               ]),
             });
             console.log(this.state.listOfFiles, "perth");
+            this.listOfFileObjects = this.listOfFileObjects.concat([{}])
+
             break;
 
-          case "filesharing":
+          case "filesharing": // on the recvr's side
             currentFile.push(atob(message.content));
             console.log("Progress on file sharing");
             break;
 
-          case "end":
-            console.log("Done with file sharing");
-            this.saveFile(currentFileMeta, currentFile);
+          case "end": // on the recvr's side
+            console.log("Done with file sharing", idx);
+            this.saveFile(this.state.listOfFiles[idx].content, currentFile);
             console.log(this.state.listOfFiles, "yellow");
+            currentFile = []
+            idx = -1
             break;
 
-          case "filerequest":
+          case "ackfilerequest": // on the recvr's side
+            idx = message.content
+            currentFile = []
+            break;
+
+          case "filerequest": // on the sender's side
+            this.dataChannel.send(JSON.stringify({
+              content: message.content,
+              type: "ackfilerequest",
+            }))
             this.handleSendFile(message.content);
             break;
 
@@ -492,9 +504,9 @@ class NewWebrtc extends Component {
     };
   };
 
-  handleRequestFile(content){
+  handleRequestFile(idx){
     this.dataChannel.send(JSON.stringify({
-      content: content,
+      content: idx,
       identity: this.userInfo.identity,
       type: "filerequest",
     }))
@@ -712,6 +724,7 @@ class NewWebrtc extends Component {
   }
   async handleSendFileInformation(fileInput) {
     var files = fileInput.current.files; // modified according to above
+    this.listOfFileObjects = this.listOfFileObjects.concat([fileInput.current.files[0]])
     if (files.length > 0) {
       let jsontosend = {
         lastModified: files[0].lastModified,
@@ -721,8 +734,6 @@ class NewWebrtc extends Component {
         type: files[0].type,
         webkitRelativePath: files[0].webkitRelativePath
       }
-
-      console.log(jsontosend, 'junny');
 
       this.dataChannel.send(
         JSON.stringify({
@@ -742,30 +753,15 @@ class NewWebrtc extends Component {
       });
     }
   }
-  handleSendFile(file) {
+  handleSendFile(idx) {
+    let file = this.listOfFileObjects[idx]
     sendFile(file, this.dataChannel);
   }
 
   render() {
     return (
       <div className="new-webrtc">
-        {/* <div>
-          <p> Parent</p>
-          <input
-            type="text"
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                this.updatelist(event.target.value);
-              }
-            }}
-          />
-
-          {this.state.list.map((message, index) => {
-            return <p>{message}</p>;
-          })}
-
-          {/* <Show list={this.state.list}></Show> */}
-        {/* </div> */}
+      
         <div className="topbar">
           <div id="buttons">
             <button
@@ -806,13 +802,6 @@ class NewWebrtc extends Component {
               </span>
 
             </button> 
-            {/* <button
-              id="screenshareacceptBtn"
-              onClick={() => {this.acceptScreenshare()}}
-              disabled={this.state.isViewStreamDisabled}
-            >
-              <span>View Stream</span>
-            </button> */}
           </div>
 
           <span id="currentRoom">{this.getRoomIdString()}</span>
@@ -838,14 +827,6 @@ class NewWebrtc extends Component {
             autoPlay
             playsInline
           ></video>
-
-          {/* <video
-            id="localScreenShare"
-            ref={this.localScreenShareRef}
-            muted
-            autoPlay
-            playsInline
-          ></video> */}
         </div>
         <div className="tabgrp">
           <TabGroup
@@ -861,24 +842,6 @@ class NewWebrtc extends Component {
           />
         </div>
         <BottomBar hangup={this.hangup} />
-
-        {/* <div id="chat">
-          {this.state.listOfMessages}
-          <input
-            type="text"
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                this.setState({
-                  listOfMessages:
-                    this.state.listOfMessages +
-                    [e.target.value.toUpperCase() + " "],
-                });
-                this.dataChannel.send(JSON.stringify(e.target.value));
-                e.target.value = "/";
-              }
-            }}
-          ></input>
-        </div> */}
       </div>
     );
   }

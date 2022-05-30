@@ -87,8 +87,7 @@ class FileSharing extends Component {
           className={`message_content ${contentAdditionalStyles}`}
           onClick={()=>{
             if (!fileCreatedByMe)
-              this.handleRequestFile(this.state.listOfFiles[idx].content)
-            console.log('PINATA', idx, this.state.listOfFiles[idx].content);
+              this.handleRequestFile(idx)
           }}
         >
           {content.name}
