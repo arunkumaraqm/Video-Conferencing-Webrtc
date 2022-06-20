@@ -7,7 +7,7 @@ import TabGroup from "./ToggleBar";
 import "../RoomPage.css";
 import { sendFile } from "./SendFile";
 import { base64ToBlob } from "./Base64Utility";
-const DEBUG = true;
+const DEBUG = false;
 const log = console.log;
 
 var app = firebase.initializeApp({
